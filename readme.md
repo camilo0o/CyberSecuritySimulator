@@ -2,7 +2,7 @@
 
 Juego web donde el jugador analiza correos y logs sospechosos y decide qué acción tomar. Cada decisión afecta la seguridad, reputación y dinero de la empresa.
 
-Proyecto para [materia] — UTEC.
+Proyecto para la Materia .NET — UTEC.
 
 ## Integrantes
 - Camilo
