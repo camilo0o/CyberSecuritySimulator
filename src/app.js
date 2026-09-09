@@ -2,8 +2,8 @@ const express = require('express');
 
 const jugadorRoutes = require('./routes/jugadorRoutes');
 const empresaRoutes = require('./routes/empresaRoutes');
-const actividadRoutes = require('./routes/actividadRoutes');
-const historialRoutes = require('./routes/historialRoutes');
+// const actividadRoutes = require('./routes/actividadRoutes');
+// const historialRoutes = require('./routes/historialRoutes');
 
 // const errorHandler = require('./middlewares/errorHandler');
 
@@ -15,8 +15,8 @@ app.use(express.json());
 // Rutas
 app.use('/jugadores', jugadorRoutes);
 app.use('/empresas', empresaRoutes);
-app.use('/actividades', actividadRoutes);
-app.use('/historial', historialRoutes);
+// app.use('/actividades', actividadRoutes);
+// app.use('/historial', historialRoutes);
 
 // Ruta de salud, útil para chequear rápido que el server responde
 app.get('/', (req, res) => {
