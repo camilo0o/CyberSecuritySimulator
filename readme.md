@@ -40,7 +40,7 @@ Corre en `http://localhost:3000`.
 | GET | `/empresas/:id` | Ver estado de la partida |
 | GET | `/empresas/:id/actividades` | Listar actividades (filtro `?estado=`) |
 | GET | `/actividades/:id` | Ver detalle de una actividad |
-| POST | `/actividades/:id/resolver` | Resolver actividad (`{ "accion": "bloquear" }`) |
+| POST | `/actividades/:id/resolver` | Resolver actividad (`{ "accion": "bloquear" }`) con `Authorization: Bearer <JWT>` |
 | POST | `/empresas/:id/avanzar` | Avanzar turno |
 | GET | `/historial/ranking` | Ver ranking de partidas |
 
@@ -49,3 +49,5 @@ Corre en `http://localhost:3000`.
 ```bash
 npm test
 ```
+
+La resolucion requiere un JWT cuyo claim `sub` sea el `jugadorId`. Las acciones soportadas son `bloquear` y `permitir`; el resultado actualiza atomicamente el estado de la actividad y las metricas de la Empresa asociada.
