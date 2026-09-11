@@ -16,13 +16,26 @@ async function iniciarPartida(jugadorId) {
     return empresa;
 }
 
-async function obtenerEstado(empresaId) {
+async function obtenerEstado(empresaId, jugadorId) {
+    const jugador = await Jugador.findOne({
+        _id: jugadorId,
+        empresaId
+    });
+
+    if (!jugador) {
+        const error = new Error('Empresa no encontrada');
+        error.statusCode = 404;
+        throw error;
+    }
+
     const empresa = await Empresa.findById(empresaId);
+
     if (!empresa) {
         const error = new Error('Empresa no encontrada');
         error.statusCode = 404;
         throw error;
     }
+
     return empresa;
 }
 
