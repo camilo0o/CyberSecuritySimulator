@@ -11,4 +11,4 @@ const historialSchema = new mongoose.Schema({
     dineroFinal: { type: Number, required: true },
 }, { timestamps: true });
 
-module.exports = mongoose.model('Historial', historialSchema);
+module.exports = mongoose.models.Historial || mongoose.model('Historial', historialSchema);
