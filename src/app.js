@@ -3,6 +3,7 @@ const express = require('express');
 const jugadorRoutes = require('./routes/jugadorRoutes');
 const empresaRoutes = require('./routes/empresaRoutes');
 const actividadRoutes = require('./routes/actividadRoutes');
+const historialRoutes = require('./routes/historialRoutes');
 
 const { autenticar } = require('./middlewares/auth');
 const { errorHandler } = require('./middlewares/errorHandler');
@@ -14,7 +15,7 @@ app.use(express.json());
 app.use('/jugadores', jugadorRoutes);
 app.use('/empresas', empresaRoutes);
 app.use('/actividades', actividadRoutes);
-
+app.use('/historial', historialRoutes);
 app.get('/', autenticar, (req, res) => {
     res.json({
         status: 'ok',
