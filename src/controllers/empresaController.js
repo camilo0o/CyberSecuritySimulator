@@ -1,4 +1,4 @@
-const { iniciarPartida, obtenerEstado } = require('../services/empresaService');
+const { iniciarPartida, obtenerEstado, avanzarTurno } = require('../services/empresaService');
 
 async function crearEmpresa(req, res, next) {
     try {
@@ -22,4 +22,17 @@ async function obtenerEstadoEmpresa(req, res, next) {
     }
 }
 
-module.exports = { crearEmpresa, obtenerEstadoEmpresa };
+async function avanzar(req, res, next) {
+    try {
+        const resultado = await avanzarTurno(
+            req.params.id,
+            req.usuario.id
+        );
+
+        res.status(200).json(resultado);
+    } catch (error) {
+        next(error);
+    }
+}
+
+module.exports = { crearEmpresa, obtenerEstadoEmpresa, avanzar };

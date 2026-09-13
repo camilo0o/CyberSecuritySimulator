@@ -5,4 +5,4 @@ const jugadorSchema = new mongoose.Schema({
     empresaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Empresa' }, // relación "pertenece"
 }, { timestamps: true });
 
-module.exports = mongoose.model('Jugador', jugadorSchema);
+module.exports = mongoose.models.Jugador || mongoose.model('Jugador', jugadorSchema);

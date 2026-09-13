@@ -6,5 +6,6 @@ const { autenticar } = require('../middlewares/auth');
 
 router.post('/', autenticar, empresaController.crearEmpresa);
 router.get('/:id', autenticar, empresaController.obtenerEstadoEmpresa);
+router.post('/:id/avanzar', autenticar, empresaController.avanzar);
 
 module.exports = router;
