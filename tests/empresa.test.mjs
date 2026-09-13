@@ -12,6 +12,7 @@ import {
     it
 } from 'vitest';
 
+import { obtenerRanking } from '../src/services/historialService.js';
 import app from '../src/app.js';
 import Jugador from '../src/models/Jugador.js';
 import Empresa from '../src/models/Empresa.js';
@@ -268,5 +269,134 @@ describe('rutas de empresas', () => {
         expect(respuesta.body.error).toBe(
             'Token invalido o expirado'
         );
+    });
+});
+
+describe('GET /historial/ranking', () => {
+    beforeEach(() => {
+        process.env.JWT_SECRET = secreto;
+    });
+
+    it('rechaza consultar el ranking sin JWT', async () => {
+        const respuesta = await request(app)
+            .get('/historial/ranking');
+
+        expect(respuesta.status).toBe(401);
+        expect(respuesta.body.error).toBe(
+            'Token de autenticacion requerido'
+        );
+    });
+
+    it('rechaza un JWT inválido', async () => {
+        const respuesta = await request(app)
+            .get('/historial/ranking')
+            .set('Authorization', 'Bearer token-invalido');
+
+        expect(respuesta.status).toBe(401);
+        expect(respuesta.body.error).toBe(
+            'Token invalido o expirado'
+        );
+    });
+
+    it('rechaza un JWT sin jugador identificado', async () => {
+        const token = jwt.sign({}, secreto);
+
+        const respuesta = await request(app)
+            .get('/historial/ranking')
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(respuesta.status).toBe(401);
+        expect(respuesta.body.error).toBe(
+            'El token no identifica al jugador'
+        );
+    });
+
+    it('devuelve el ranking con un JWT válido', async () => {
+        const jugador = await Jugador.create({
+            nombre: 'Jugador ranking'
+        });
+
+        const empresa = await Empresa.create({
+            estado: 'victoria'
+        });
+
+        await Historial.create({
+            jugadorId: jugador._id,
+            empresaId: empresa._id,
+            nombreJugador: jugador.nombre,
+            seguridadFinal: 90,
+            reputacionFinal: 80,
+            dineroFinal: 9500
+        });
+
+        const token = jwt.sign(
+            { sub: jugador._id.toString() },
+            secreto
+        );
+
+        const respuesta = await request(app)
+            .get('/historial/ranking')
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(respuesta.status).toBe(200);
+        expect(respuesta.body.ranking).toHaveLength(1);
+        expect(respuesta.body.ranking[0].posicion).toBe(1);
+        expect(respuesta.body.ranking[0].nombreJugador).toBe(
+            'Jugador ranking'
+        );
+        expect(respuesta.body.ranking[0].seguridadFinal).toBe(90);
+    });
+
+    it('ordena las partidas por sus métricas finales', async () => {
+        const jugadorUno = await Jugador.create({
+            nombre: 'Jugador primero'
+        });
+
+        const jugadorDos = await Jugador.create({
+            nombre: 'Jugador segundo'
+        });
+
+        const empresaUno = await Empresa.create({
+            estado: 'victoria'
+        });
+
+        const empresaDos = await Empresa.create({
+            estado: 'derrota'
+        });
+
+        await Historial.create([
+            {
+                jugadorId: jugadorUno._id,
+                empresaId: empresaUno._id,
+                nombreJugador: jugadorUno.nombre,
+                seguridadFinal: 50,
+                reputacionFinal: 50,
+                dineroFinal: 5000
+            },
+            {
+                jugadorId: jugadorDos._id,
+                empresaId: empresaDos._id,
+                nombreJugador: jugadorDos.nombre,
+                seguridadFinal: 90,
+                reputacionFinal: 90,
+                dineroFinal: 9000
+            }
+        ]);
+
+        const token = jwt.sign(
+            { sub: jugadorUno._id.toString() },
+            secreto
+        );
+
+        const respuesta = await request(app)
+            .get('/historial/ranking')
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(respuesta.status).toBe(200);
+        expect(respuesta.body.ranking[0].nombreJugador).toBe(
+            'Jugador segundo'
+        );
+        expect(respuesta.body.ranking[0].posicion).toBe(1);
+        expect(respuesta.body.ranking[1].posicion).toBe(2);
     });
 });

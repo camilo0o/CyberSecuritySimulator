@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Jugador = require('../models/Jugador');
 const Empresa = require('../models/Empresa');
 const Actividad = require('../models/Actividad');
-const Historial = require('../models/Historial');
+const { crearHistorial } = require('./historialService');
 
 function limitar(valor, minimo, maximo) {
     return Math.min(maximo, Math.max(minimo, valor));
@@ -129,14 +129,14 @@ async function avanzarTurno(empresaId, jugadorId) {
                     { session }
                 );
             } else {
-                await Historial.create([{
+                await crearHistorial({
                     jugadorId,
                     empresaId,
                     nombreJugador: jugador.nombre,
                     seguridadFinal: empresa.seguridad,
                     reputacionFinal: empresa.reputacion,
                     dineroFinal: empresa.dinero
-                }], { session });
+                }, session);
             }
 
             resultado = {
