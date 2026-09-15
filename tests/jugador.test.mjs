@@ -2,7 +2,7 @@ import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 
 import app from '../src/app.js';
-import { validarCrearJugador } from '../src/validators/jugadorValidator.js';
+im  port { validarCrearJugador } from '../src/validators/jugadorValidator.js';
 
 describe('POST /jugadores', () => {
     it('permite acceder sin JWT y valida el body', async () => {

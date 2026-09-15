@@ -1,11 +1,74 @@
 const mongoose = require('mongoose');
 const Actividad = require('../models/Actividad');
+require('../models/Email');
+require('../models/Logs');
 const Jugador = require('../models/Jugador');
 const Empresa = require('../models/Empresa');
 
 const ACCIONES = ['bloquear', 'permitir'];
+const ESTADOS = ['pendiente', 'resuelta', 'ignorada'];
+
+function crearError(mensaje, statusCode) {
+    const error = new Error(mensaje);
+    error.statusCode = statusCode;
+    return error;
+}
 
 function limitar(valor, minimo, maximo) { return Math.min(maximo, Math.max(minimo, valor)); }
+
+async function validarEmpresaDelJugador(empresaId, jugadorId) {
+    if (!mongoose.isValidObjectId(empresaId) || !mongoose.isValidObjectId(jugadorId)) {
+        throw crearError('Identificador invalido', 400);
+    }
+
+    const jugador = await Jugador.findOne({ _id: jugadorId, empresaId });
+
+    if (!jugador) {
+        throw crearError('Empresa no encontrada', 404);
+    }
+
+    const empresa = await Empresa.findById(empresaId);
+
+    if (!empresa) {
+        throw crearError('Empresa no encontrada', 404);
+    }
+
+    return { jugador, empresa };
+}
+
+async function listarActividadesPorEmpresa(empresaId, jugadorId, estado) {
+    await validarEmpresaDelJugador(empresaId, jugadorId);
+
+    if (estado && !ESTADOS.includes(estado)) {
+        throw crearError('Estado de actividad invalido', 400);
+    }
+
+    const filtro = { jugadorId };
+
+    if (estado) {
+        filtro.estado = estado;
+    }
+
+    return await Actividad.find(filtro)
+        .sort({ turno: 1, fecha: 1, _id: 1 });
+}
+
+async function obtenerDetalleActividad(actividadId, jugadorId) {
+    if (!mongoose.isValidObjectId(actividadId) || !mongoose.isValidObjectId(jugadorId)) {
+        throw crearError('Identificador invalido', 400);
+    }
+
+    const actividad = await Actividad.findOne({
+        _id: actividadId,
+        jugadorId
+    });
+
+    if (!actividad) {
+        throw crearError('Actividad no encontrada', 404);
+    }
+
+    return actividad;
+}
 
 function evaluarImpacto(actividad, accion, empresa) {
     const riesgo = actividad.nivelRiesgo;
@@ -43,19 +106,19 @@ function evaluarImpacto(actividad, accion, empresa) {
 }
 
 async function resolverActividad(actividadId, jugadorId, accion) {
-    if (!ACCIONES.includes(accion)) { const error = new Error('La accion debe ser bloquear o permitir'); error.statusCode = 400; throw error; }
-    if (!mongoose.isValidObjectId(actividadId) || !mongoose.isValidObjectId(jugadorId)) { const error = new Error('Identificador invalido'); error.statusCode = 400; throw error; }
+    if (!ACCIONES.includes(accion)) { throw crearError('La accion debe ser bloquear o permitir', 400); }
+    if (!mongoose.isValidObjectId(actividadId) || !mongoose.isValidObjectId(jugadorId)) { throw crearError('Identificador invalido', 400); }
     const session = await mongoose.startSession();
     try {
         let resultado;
         await session.withTransaction(async () => {
             const actividad = await Actividad.findOne({ _id: actividadId, jugadorId }).session(session);
-            if (!actividad) { const error = new Error('Actividad no encontrada'); error.statusCode = 404; throw error; }
-            if (actividad.estado !== 'pendiente') { const error = new Error('La actividad ya fue resuelta'); error.statusCode = 409; throw error; }
+            if (!actividad) { throw crearError('Actividad no encontrada', 404); }
+            if (actividad.estado !== 'pendiente') { throw crearError('La actividad ya fue resuelta', 409); }
             const jugador = await Jugador.findById(jugadorId).session(session);
-            if (!jugador || !jugador.empresaId) { const error = new Error('El jugador no tiene una empresa asociada'); error.statusCode = 404; throw error; }
+            if (!jugador || !jugador.empresaId) { throw crearError('El jugador no tiene una empresa asociada', 404); }
             const empresa = await Empresa.findById(jugador.empresaId).session(session);
-            if (!empresa) { const error = new Error('Empresa no encontrada'); error.statusCode = 404; throw error; }
+            if (!empresa) { throw crearError('Empresa no encontrada', 404); }
             const evaluacion = evaluarImpacto(actividad, accion, empresa);
             actividad.estado = 'resuelta';
             await actividad.save({ session });
@@ -67,4 +130,11 @@ async function resolverActividad(actividadId, jugadorId, accion) {
     } finally { await session.endSession(); }
 }
 
-module.exports = { resolverActividad, evaluarImpacto, ACCIONES };
+module.exports = {
+    listarActividadesPorEmpresa,
+    obtenerDetalleActividad,
+    resolverActividad,
+    evaluarImpacto,
+    ACCIONES,
+    ESTADOS
+};
