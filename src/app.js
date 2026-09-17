@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 
 const jugadorRoutes = require('./routes/jugadorRoutes');
 const empresaRoutes = require('./routes/empresaRoutes');
@@ -9,6 +10,12 @@ const { autenticar } = require('./middlewares/auth');
 const { errorHandler } = require('./middlewares/errorHandler');
 
 const app = express();
+
+app.use(cors({
+    origin: process.env.NODE_ENV === 'production'
+        ? process.env.FRONTEND_URL_PROD
+        : process.env.FRONTEND_URL_DEV,
+}));
 
 app.use(express.json());
 
