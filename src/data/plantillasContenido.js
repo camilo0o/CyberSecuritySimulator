@@ -7,9 +7,8 @@
 //          proxy.log (navegacion web), sandbox.log (analisis de adjuntos)
 
 const BANCO_TICKETS = [
-    // ---------- Maliciosos ----------
     {
-        descripcion: 'Correo de restablecimiento de contrasena con enlace externo',
+        descripcion: 'cfernandez reporta un aviso de contrasena expirada',
         dificultad: 'media',
         nivelRiesgo: 75,
         esMalicioso: true,
@@ -55,7 +54,7 @@ const BANCO_TICKETS = [
         ]
     },
     {
-        descripcion: 'Factura con adjunto ejecutable disfrazado de PDF',
+        descripcion: 'Contabilidad recibio una factura pendiente de pago',
         dificultad: 'alta',
         nivelRiesgo: 90,
         esMalicioso: true,
@@ -86,7 +85,7 @@ const BANCO_TICKETS = [
         ]
     },
     {
-        descripcion: 'Suplantacion del gerente general pidiendo una transferencia urgente',
+        descripcion: 'Finanzas recibio un pedido urgente de transferencia de gerencia',
         dificultad: 'alta',
         nivelRiesgo: 85,
         esMalicioso: true,
@@ -121,7 +120,7 @@ const BANCO_TICKETS = [
         ]
     },
     {
-        descripcion: 'Phishing que simula el portal de recursos humanos',
+        descripcion: 'Varios empleados recibieron un pedido de RRHH para actualizar datos bancarios',
         dificultad: 'media',
         nivelRiesgo: 65,
         esMalicioso: true,
@@ -156,7 +155,7 @@ const BANCO_TICKETS = [
         ]
     },
     {
-        descripcion: 'Planilla con macro maliciosa enviada por un supuesto socio',
+        descripcion: 'Gerencia de ventas recibio un reporte trimestral con adjunto',
         dificultad: 'alta',
         nivelRiesgo: 80,
         esMalicioso: true,
@@ -187,7 +186,7 @@ const BANCO_TICKETS = [
         ]
     },
     {
-        descripcion: 'Falso soporte tecnico con enlace acortado a un ejecutable',
+        descripcion: 'lrodriguez reporta un aviso de actualizacion de seguridad',
         dificultad: 'media',
         nivelRiesgo: 55,
         esMalicioso: true,
@@ -214,7 +213,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'mail.log',
                 hora: '14:01:13',
-                contenido: 'mx01 postfix/smtpd: from=<it-support@empresa-updates.com> ip=203.0.113.55 spf=FAIL nota=el-soporte-real-usa-soporte_it@empresa.com',
+                contenido: 'mx01 postfix/smtpd: from=<it-support@empresa-updates.com> ip=203.0.113.55 spf=FAIL dominio_propio=NO',
                 direccionIp: '203.0.113.55',
                 ubicacion: 'Desconocida',
                 tipoAcceso: 'smtp'
@@ -222,7 +221,7 @@ const BANCO_TICKETS = [
         ]
     },
     {
-        descripcion: 'Correo que parece de una companera pero viene de afuera',
+        descripcion: 'nmartinez recibio un documento compartido por una companera',
         dificultad: 'alta',
         nivelRiesgo: 70,
         esMalicioso: true,
@@ -254,7 +253,7 @@ const BANCO_TICKETS = [
         ]
     },
     {
-        descripcion: 'Premio falso de un sorteo internacional',
+        descripcion: 'dvargas reporta un correo de un sorteo',
         dificultad: 'baja',
         nivelRiesgo: 45,
         esMalicioso: true,
@@ -289,9 +288,8 @@ const BANCO_TICKETS = [
         ]
     },
 
-    // ---------- Legitimos ----------
     {
-        descripcion: 'Correo real de una companera confirmando una reunion',
+        descripcion: 'El equipo de desarrollo recibio una confirmacion de reunion',
         dificultad: 'baja',
         nivelRiesgo: 5,
         esMalicioso: false,
@@ -326,7 +324,7 @@ const BANCO_TICKETS = [
         ]
     },
     {
-        descripcion: 'Factura real del proveedor de hosting',
+        descripcion: 'Contabilidad recibio la factura mensual de hosting',
         dificultad: 'media',
         nivelRiesgo: 10,
         esMalicioso: false,
@@ -357,7 +355,7 @@ const BANCO_TICKETS = [
         ]
     },
     {
-        descripcion: 'Boletin interno mensual de comunicaciones',
+        descripcion: 'Todos recibieron el boletin interno del mes',
         dificultad: 'baja',
         nivelRiesgo: 0,
         esMalicioso: false,
@@ -391,7 +389,7 @@ const BANCO_TICKETS = [
         ]
     },
     {
-        descripcion: 'Presentacion real compartida por un colega',
+        descripcion: 'Marketing recibio una presentacion para la reunion',
         dificultad: 'media',
         nivelRiesgo: 5,
         esMalicioso: false,
@@ -422,7 +420,7 @@ const BANCO_TICKETS = [
         ]
     },
     {
-        descripcion: 'Aviso alarmante de nuevo dispositivo que en realidad es legitimo',
+        descripcion: 'nmartinez reporta una alerta de inicio de sesion desde un dispositivo nuevo',
         dificultad: 'alta',
         nivelRiesgo: 40,
         esMalicioso: false,
@@ -457,7 +455,7 @@ const BANCO_TICKETS = [
         ]
     },
     {
-        descripcion: 'Recordatorio de vencimiento de contrasena del sistema interno',
+        descripcion: 'lrodriguez reporta un aviso de vencimiento de contrasena',
         dificultad: 'alta',
         nivelRiesgo: 35,
         esMalicioso: false,

@@ -27,8 +27,8 @@ function partidaFinalizada(empresa) {
     );
 }
 
-function crearProximasActividades(jugadorId, turno) {
-    return generarActividadesDeTurno(jugadorId, turno, 2); // 2 tickets por turno
+function crearProximasActividades(empresaId, jugadorId, turno) {
+    return generarActividadesDeTurno(empresaId, jugadorId, turno, 1); // 1 ticket por turno
 }
 
 async function avanzarTurno(empresaId, jugadorId) {
@@ -73,6 +73,7 @@ async function avanzarTurno(empresaId, jugadorId) {
             }
 
             const pendientes = await Actividad.find({
+                empresaId,
                 jugadorId,
                 turno: empresa.turno,
                 estado: 'pendiente'
@@ -105,7 +106,7 @@ async function avanzarTurno(empresaId, jugadorId) {
 
             if (empresa.estado === 'activa') {
                 nuevasActividades = await Actividad.insertMany(
-                    await crearProximasActividades(jugadorId, empresa.turno),
+                    await crearProximasActividades(empresaId, jugadorId, empresa.turno),
                     { session }
                 );
             } else {
@@ -205,13 +206,12 @@ async function iniciarPartida(jugadorId) {
     }
 
     const empresa = await Empresa.create({});
-    await sembrarActividadesDelTurno(jugadorId, empresa.turno);
 
     jugador.empresaId = empresa._id;
     await jugador.save();
 
     await Actividad.insertMany(
-        await crearProximasActividades(jugadorId, empresa.turno)
+        await crearProximasActividades(empresa._id, jugadorId, empresa.turno)
     );
 
     return empresa;

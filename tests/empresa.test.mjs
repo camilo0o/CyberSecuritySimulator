@@ -44,8 +44,9 @@ function tokenPara(jugador) {
     );
 }
 
-function ticketPendiente(jugadorId, descripcion, nivelRiesgo) {
+function ticketPendiente(empresaId, jugadorId, descripcion, nivelRiesgo) {
     return {
+        empresaId,
         jugadorId,
         turno: 1,
         descripcion,
@@ -169,7 +170,7 @@ describe('POST /empresas/:id/avanzar', () => {
         await jugador.save();
 
         await Actividad.create(
-            ticketPendiente(jugador._id, 'Correo pendiente', 20)
+            ticketPendiente(empresa._id, jugador._id, 'Correo pendiente', 20)
         );
 
         const token = tokenPara(jugador);
@@ -184,7 +185,7 @@ describe('POST /empresas/:id/avanzar', () => {
         expect(respuesta.body.empresa.seguridad).toBe(80);
         expect(respuesta.body.empresa.reputacion).toBe(80);
         expect(respuesta.body.empresa.dinero).toBe(9900);
-        expect(respuesta.body.actividades).toHaveLength(2);
+        expect(respuesta.body.actividades).toHaveLength(1);
 
         const pendiente = await Actividad.findOne({
             jugadorId: jugador._id,
@@ -198,7 +199,7 @@ describe('POST /empresas/:id/avanzar', () => {
             turno: 2
         });
 
-        expect(nuevas).toHaveLength(2);
+        expect(nuevas).toHaveLength(1);
         expect(nuevas[0].correo.remitente).toBeTruthy();
         expect(nuevas[0].logs.length).toBeGreaterThan(0);
     });
@@ -244,7 +245,7 @@ describe('POST /empresas/:id/avanzar', () => {
         await jugador.save();
 
         await Actividad.create(
-            ticketPendiente(jugador._id, 'Incidente crítico', 100)
+            ticketPendiente(empresa._id, jugador._id, 'Incidente crítico', 100)
         );
 
         const token = tokenPara(jugador);
@@ -344,7 +345,7 @@ describe('rutas de empresas', () => {
         );
     });
 
-    it('al iniciar la partida siembra 2 tickets para el turno 1', async () => {
+    it('al iniciar la partida siembra 1 ticket para el turno 1', async () => {
         const jugador = await crearJugador('Jugador nuevo');
 
         const respuesta = await request(app)
@@ -356,7 +357,7 @@ describe('rutas de empresas', () => {
 
         const tickets = await Actividad.find({ jugadorId: jugador._id, turno: 1 });
 
-        expect(tickets).toHaveLength(2);
+        expect(tickets).toHaveLength(1);
         tickets.forEach(ticket => {
             expect(ticket.estado).toBe('pendiente');
             expect(ticket.correo.titulo).toBeTruthy();

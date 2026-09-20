@@ -4,6 +4,7 @@ const correoSchema = require('./Correo');
 const { logSchema } = require('./Logs');
 
 const actividadSchema = new mongoose.Schema({
+    empresaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Empresa', required: true },
     jugadorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Jugador', required: true },
     turno: { type: Number, required: true, default: 1 },
     descripcion: { type: String, required: true },

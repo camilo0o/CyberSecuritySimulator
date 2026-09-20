@@ -135,7 +135,7 @@ Respuesta `200`:
 Una "empresa" es la partida en curso del jugador. Cada jugador tiene una sola empresa activa a la vez (`Jugador.empresaId`).
 
 #### `POST /empresas`
-Inicia una partida nueva para el jugador autenticado. Genera automáticamente los primeros 2 tickets (turno 1).
+Inicia una partida nueva para el jugador autenticado. Genera automáticamente el primer ticket (turno 1).
 
 Respuesta `201`:
 ```json
@@ -166,7 +166,7 @@ Respuesta `200`:
 Errores: `400` con `"Estado de actividad invalido"` si el filtro no es uno de los tres válidos · `404` si la empresa no es del jugador.
 
 #### `POST /empresas/:id/avanzar`
-Cierra el turno actual: los tickets que quedaron `pendiente` pasan a `ignorada` y penalizan seguridad/reputación/dinero en proporción a su `nivelRiesgo`. Si no se cumplieron las condiciones de derrota (alguna métrica en 0) ni se superó `maxTurnos`, genera 2 tickets nuevos para el turno siguiente.
+Cierra el turno actual: los tickets que quedaron `pendiente` pasan a `ignorada` y penalizan seguridad/reputación/dinero en proporción a su `nivelRiesgo`. Si no se cumplieron las condiciones de derrota (alguna métrica en 0) ni se superó `maxTurnos`, genera 1 ticket nuevo para el turno siguiente.
 
 Respuesta `200`:
 ```json

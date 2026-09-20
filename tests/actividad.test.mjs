@@ -66,6 +66,7 @@ async function crearPartidaConTickets() {
     await jugador.save();
 
     const pendiente = await Actividad.create({
+        empresaId: empresa._id,
         jugadorId: jugador._id,
         turno: 1,
         descripcion: 'Correo sospechoso de soporte',
@@ -100,6 +101,7 @@ async function crearPartidaConTickets() {
     });
 
     const resuelta = await Actividad.create({
+        empresaId: empresa._id,
         jugadorId: jugador._id,
         turno: 1,
         descripcion: 'Correo interno de una reunion',

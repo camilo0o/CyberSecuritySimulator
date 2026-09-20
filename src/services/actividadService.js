@@ -41,7 +41,7 @@ async function listarActividadesPorEmpresa(empresaId, jugadorId, estado) {
         throw crearError('Estado de actividad invalido', 400);
     }
 
-    const filtro = { jugadorId };
+    const filtro = { empresaId, jugadorId };
 
     if (estado) {
         filtro.estado = estado;

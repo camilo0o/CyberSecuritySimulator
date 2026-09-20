@@ -10,24 +10,25 @@ async function elegirAlAzar(cantidad) {
     ]);
 }
 
-function construirActividad(plantilla, jugadorId, turno) {
+function construirActividad(plantilla, empresaId, jugadorId, turno) {
     const { _id, __v, createdAt, updatedAt, ...campos } = plantilla;
 
     return {
         ...campos,
         // Cada ticket necesita sus propios logs, sin reutilizar los _id de la plantilla
         logs: (campos.logs || []).map(({ _id: logId, ...log }) => log),
+        empresaId,
         jugadorId,
         turno,
         estado: 'pendiente'
     };
 }
 
-async function generarActividadesDeTurno(jugadorId, turno, cantidad = 2) {
+async function generarActividadesDeTurno(empresaId, jugadorId, turno, cantidad = 1) {
     const plantillas = await elegirAlAzar(cantidad);
 
     return plantillas.map(
-        plantilla => construirActividad(plantilla, jugadorId, turno)
+        plantilla => construirActividad(plantilla, empresaId, jugadorId, turno)
     );
 }
 
