@@ -163,6 +163,8 @@ async function iniciarPartida(jugadorId) {
     }
 
     const empresa = await Empresa.create({});
+    await Actividad.insertMany(crearProximasActividades(jugadorId, empresa.turno));
+
     jugador.empresaId = empresa._id;
     await jugador.save();
 
