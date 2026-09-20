@@ -3,6 +3,7 @@ const Jugador = require('../models/Jugador');
 const Empresa = require('../models/Empresa');
 const Actividad = require('../models/Actividad');
 const { crearHistorial } = require('./historialService');
+const { sembrarActividadesDelTurno } = require('../data/databaseSeeder');
 
 function limitar(valor, minimo, maximo) {
     return Math.min(maximo, Math.max(minimo, valor));
@@ -26,30 +27,6 @@ function partidaFinalizada(empresa) {
     );
 }
 
-function crearProximasActividades(jugadorId, turno) {
-    return [
-        {
-            jugadorId,
-            turno,
-            tipo: 'email',
-            descripcion: 'Correo sospechoso recibido',
-            dificultad: 'media',
-            nivelRiesgo: 40,
-            esMalicioso: true,
-            estado: 'pendiente'
-        },
-        {
-            jugadorId,
-            turno,
-            tipo: 'logs',
-            descripcion: 'Actividad inusual detectada en los logs',
-            dificultad: 'alta',
-            nivelRiesgo: 70,
-            esMalicioso: true,
-            estado: 'pendiente'
-        }
-    ];
-}
 
 async function avanzarTurno(empresaId, jugadorId) {
     if (
@@ -124,8 +101,9 @@ async function avanzarTurno(empresaId, jugadorId) {
             let nuevasActividades = [];
 
             if (empresa.estado === 'activa') {
-                nuevasActividades = await Actividad.insertMany(
-                    crearProximasActividades(jugadorId, empresa.turno),
+                nuevasActividades = await sembrarActividadesDelTurno(
+                    jugadorId,
+                    empresa.turno,
                     { session }
                 );
             } else {
@@ -163,7 +141,7 @@ async function iniciarPartida(jugadorId) {
     }
 
     const empresa = await Empresa.create({});
-    await Actividad.insertMany(crearProximasActividades(jugadorId, empresa.turno));
+    await sembrarActividadesDelTurno(jugadorId, empresa.turno);
 
     jugador.empresaId = empresa._id;
     await jugador.save();
