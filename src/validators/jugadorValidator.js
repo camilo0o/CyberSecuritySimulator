@@ -1,11 +1,3 @@
-function validarCrearJugador(data) {
-    const { nombre } = data;
-    if (!nombre || typeof nombre !== 'string' || nombre.trim() === '') {
-        return { valido: false, error: 'El nombre es requerido y debe ser un texto válido' };
-    }
-    return { valido: true };
-}
-
 function validarRegistro({ nombre, email, password }) {
     if (!nombre || typeof nombre !== 'string' || nombre.trim() === '') {
         return { valido: false, error: 'El nombre es requerido' };
@@ -26,4 +18,4 @@ function validarLogin({ email, password }) {
     return { valido: true };
 }
 
-module.exports = { validarCrearJugador, validarRegistro, validarLogin };
+module.exports = { validarRegistro, validarLogin };

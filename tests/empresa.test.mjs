@@ -13,15 +13,59 @@ import {
 } from 'vitest';
 
 import { obtenerRanking } from '../src/services/historialService.js';
+import { sembrarPlantillas } from '../src/data/seedPlantillas.js';
 import app from '../src/app.js';
 import Jugador from '../src/models/Jugador.js';
 import Empresa from '../src/models/Empresa.js';
 import Actividad from '../src/models/Actividad.js';
 import Historial from '../src/models/Historial.js';
+import PlantillaActividad from '../src/models/PlantillaActividad.js';
+import { BANCO_TICKETS } from '../src/data/plantillasContenido.js';
 
 
 const secreto = 'secreto-de-prueba';
 let replSet;
+let contadorJugadores = 0;
+
+function crearJugador(nombre) {
+    contadorJugadores += 1;
+
+    return Jugador.create({
+        nombre,
+        email: `jugador${contadorJugadores}@test.com`,
+        password: 'hash-de-prueba'
+    });
+}
+
+function tokenPara(jugador) {
+    return jwt.sign(
+        { sub: jugador._id.toString(), tokenVersion: jugador.tokenVersion },
+        secreto
+    );
+}
+
+function ticketPendiente(jugadorId, descripcion, nivelRiesgo) {
+    return {
+        jugadorId,
+        turno: 1,
+        descripcion,
+        nivelRiesgo,
+        estado: 'pendiente',
+        correo: {
+            titulo: descripcion,
+            remitente: 'alguien@externo.com',
+            destinatario: 'empleado@empresa.com',
+            contenido: 'Contenido de prueba'
+        },
+        logs: [
+            {
+                archivo: 'mail.log',
+                hora: '10:00:00',
+                contenido: 'mx01 postfix/smtpd: from=<alguien@externo.com> spf=FAIL'
+            }
+        ]
+    };
+}
 
 beforeAll(async () => {
     replSet = await MongoMemoryReplSet.create({
@@ -32,6 +76,7 @@ beforeAll(async () => {
     });
 
     await mongoose.connect(replSet.getUri());
+    await sembrarPlantillas();
 });
 
 afterEach(async () => {
@@ -48,6 +93,18 @@ afterAll(async () => {
     await replSet.stop();
 });
 
+
+describe('banco de tickets', () => {
+    it('siembra todas las plantillas con correo y logs de evidencia', async () => {
+        const plantillas = await PlantillaActividad.find({});
+
+        expect(plantillas).toHaveLength(BANCO_TICKETS.length);
+        plantillas.forEach(plantilla => {
+            expect(plantilla.correo.remitente).toBeTruthy();
+            expect(plantilla.logs.length).toBeGreaterThan(0);
+        });
+    });
+});
 
 describe('POST /empresas/:id/avanzar', () => {
     beforeEach(() => {
@@ -89,10 +146,8 @@ describe('POST /empresas/:id/avanzar', () => {
     });
 
     it('rechaza un identificador de empresa inválido', async () => {
-        const token = jwt.sign(
-            { sub: '507f1f77bcf86cd799439011' },
-            secreto
-        );
+        const jugador = await crearJugador('Jugador id invalido');
+        const token = tokenPara(jugador);
 
         const respuesta = await request(app)
             .post('/empresas/id-invalido/avanzar')
@@ -103,9 +158,7 @@ describe('POST /empresas/:id/avanzar', () => {
     });
 
     it('penaliza pendientes y genera nuevas actividades', async () => {
-        const jugador = await Jugador.create({
-            nombre: 'Jugador de prueba'
-        });
+        const jugador = await crearJugador('Jugador de prueba');
 
         const empresa = await Empresa.create({
             turno: 1,
@@ -115,19 +168,11 @@ describe('POST /empresas/:id/avanzar', () => {
         jugador.empresaId = empresa._id;
         await jugador.save();
 
-        await Actividad.create({
-            jugadorId: jugador._id,
-            turno: 1,
-            tipo: 'email',
-            descripcion: 'Correo pendiente',
-            nivelRiesgo: 20,
-            estado: 'pendiente'
-        });
-
-        const token = jwt.sign(
-            { sub: jugador._id.toString() },
-            secreto
+        await Actividad.create(
+            ticketPendiente(jugador._id, 'Correo pendiente', 20)
         );
+
+        const token = tokenPara(jugador);
 
         const respuesta = await request(app)
             .post(`/empresas/${empresa._id}/avanzar`)
@@ -154,12 +199,12 @@ describe('POST /empresas/:id/avanzar', () => {
         });
 
         expect(nuevas).toHaveLength(2);
+        expect(nuevas[0].correo.remitente).toBeTruthy();
+        expect(nuevas[0].logs.length).toBeGreaterThan(0);
     });
 
     it('finaliza la partida cuando se agota el máximo de turnos', async () => {
-        const jugador = await Jugador.create({
-            nombre: 'Jugador ganador'
-        });
+        const jugador = await crearJugador('Jugador ganador');
 
         const empresa = await Empresa.create({
             turno: 1,
@@ -169,10 +214,7 @@ describe('POST /empresas/:id/avanzar', () => {
         jugador.empresaId = empresa._id;
         await jugador.save();
 
-        const token = jwt.sign(
-            { sub: jugador._id.toString() },
-            secreto
-        );
+        const token = tokenPara(jugador);
 
         const respuesta = await request(app)
             .post(`/empresas/${empresa._id}/avanzar`)
@@ -191,9 +233,7 @@ describe('POST /empresas/:id/avanzar', () => {
     });
 
     it('finaliza la partida por pérdida de seguridad', async () => {
-        const jugador = await Jugador.create({
-            nombre: 'Jugador derrotado'
-        });
+        const jugador = await crearJugador('Jugador derrotado');
 
         const empresa = await Empresa.create({
             turno: 1,
@@ -203,19 +243,11 @@ describe('POST /empresas/:id/avanzar', () => {
         jugador.empresaId = empresa._id;
         await jugador.save();
 
-        await Actividad.create({
-            jugadorId: jugador._id,
-            turno: 1,
-            tipo: 'logs',
-            descripcion: 'Incidente crítico',
-            nivelRiesgo: 100,
-            estado: 'pendiente'
-        });
-
-        const token = jwt.sign(
-            { sub: jugador._id.toString() },
-            secreto
+        await Actividad.create(
+            ticketPendiente(jugador._id, 'Incidente crítico', 100)
         );
+
+        const token = tokenPara(jugador);
 
         const respuesta = await request(app)
             .post(`/empresas/${empresa._id}/avanzar`)
@@ -234,6 +266,68 @@ describe('POST /empresas/:id/avanzar', () => {
     });
 });
 
+describe('POST /empresas/:id/rendirse', () => {
+    beforeEach(() => {
+        process.env.JWT_SECRET = secreto;
+    });
+
+    it('rechaza rendirse sin JWT', async () => {
+        const respuesta = await request(app)
+            .post('/empresas/507f1f77bcf86cd799439011/rendirse');
+
+        expect(respuesta.status).toBe(401);
+        expect(respuesta.body.error).toBe(
+            'Token de autenticacion requerido'
+        );
+    });
+
+    it('finaliza la partida en derrota sin importar las métricas', async () => {
+        const jugador = await crearJugador('Jugador que se rinde');
+
+        const empresa = await Empresa.create({
+            turno: 3,
+            seguridad: 80,
+            reputacion: 70,
+            dinero: 5000
+        });
+
+        jugador.empresaId = empresa._id;
+        await jugador.save();
+
+        const token = tokenPara(jugador);
+
+        const respuesta = await request(app)
+            .post(`/empresas/${empresa._id}/rendirse`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(respuesta.status).toBe(200);
+        expect(respuesta.body.empresa.estado).toBe('derrota');
+        expect(respuesta.body.empresa.seguridad).toBe(80);
+
+        const historial = await Historial.findOne({ empresaId: empresa._id });
+        expect(historial).not.toBeNull();
+        expect(historial.nombreJugador).toBe('Jugador que se rinde');
+    });
+
+    it('rechaza rendirse en una partida que ya finalizó', async () => {
+        const jugador = await crearJugador('Jugador con partida finalizada');
+
+        const empresa = await Empresa.create({ estado: 'victoria' });
+
+        jugador.empresaId = empresa._id;
+        await jugador.save();
+
+        const token = tokenPara(jugador);
+
+        const respuesta = await request(app)
+            .post(`/empresas/${empresa._id}/rendirse`)
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(respuesta.status).toBe(409);
+        expect(respuesta.body.error).toBe('La partida ya finalizo');
+    });
+});
+
 describe('rutas de empresas', () => {
     beforeEach(() => {
         process.env.JWT_SECRET = secreto;
@@ -248,6 +342,26 @@ describe('rutas de empresas', () => {
         expect(respuesta.body.error).toBe(
             'Token de autenticacion requerido'
         );
+    });
+
+    it('al iniciar la partida siembra 2 tickets para el turno 1', async () => {
+        const jugador = await crearJugador('Jugador nuevo');
+
+        const respuesta = await request(app)
+            .post('/empresas')
+            .set('Authorization', `Bearer ${tokenPara(jugador)}`)
+            .send({});
+
+        expect(respuesta.status).toBe(201);
+
+        const tickets = await Actividad.find({ jugadorId: jugador._id, turno: 1 });
+
+        expect(tickets).toHaveLength(2);
+        tickets.forEach(ticket => {
+            expect(ticket.estado).toBe('pendiente');
+            expect(ticket.correo.titulo).toBeTruthy();
+            expect(ticket.logs.length).toBeGreaterThan(0);
+        });
     });
 
     it('rechaza consultar una empresa sin JWT', async () => {
@@ -312,9 +426,7 @@ describe('GET /historial/ranking', () => {
     });
 
     it('devuelve el ranking con un JWT válido', async () => {
-        const jugador = await Jugador.create({
-            nombre: 'Jugador ranking'
-        });
+        const jugador = await crearJugador('Jugador ranking');
 
         const empresa = await Empresa.create({
             estado: 'victoria'
@@ -329,10 +441,7 @@ describe('GET /historial/ranking', () => {
             dineroFinal: 9500
         });
 
-        const token = jwt.sign(
-            { sub: jugador._id.toString() },
-            secreto
-        );
+        const token = tokenPara(jugador);
 
         const respuesta = await request(app)
             .get('/historial/ranking')
@@ -348,13 +457,9 @@ describe('GET /historial/ranking', () => {
     });
 
     it('ordena las partidas por sus métricas finales', async () => {
-        const jugadorUno = await Jugador.create({
-            nombre: 'Jugador primero'
-        });
+        const jugadorUno = await crearJugador('Jugador primero');
 
-        const jugadorDos = await Jugador.create({
-            nombre: 'Jugador segundo'
-        });
+        const jugadorDos = await crearJugador('Jugador segundo');
 
         const empresaUno = await Empresa.create({
             estado: 'victoria'
@@ -383,10 +488,7 @@ describe('GET /historial/ranking', () => {
             }
         ]);
 
-        const token = jwt.sign(
-            { sub: jugadorUno._id.toString() },
-            secreto
-        );
+        const token = tokenPara(jugadorUno);
 
         const respuesta = await request(app)
             .get('/historial/ranking')

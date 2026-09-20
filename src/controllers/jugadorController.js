@@ -1,30 +1,10 @@
-const { crearJugador: crearJugadorService } = require('../services/jugadorService');
 const { crearTokenJugador } = require('../utils/token');
-const { validarCrearJugador, validarRegistro, validarLogin } = require('../validators/jugadorValidator');
-const { registrarJugador, validarCredenciales } = require('../services/jugadorService');
-const { cerrarSesion: cerrarSesionService } = require('../services/jugadorService');
-
-async function crearJugador(req, res, next) {
-    try {
-        const validacion = validarCrearJugador(req.body);
-
-        if (!validacion.valido) {
-            return res.status(400).json({
-                error: validacion.error
-            });
-        }
-
-        const jugador = await crearJugadorService(req.body.nombre);
-        const token = crearTokenJugador(jugador._id, jugador.tokenVersion);
-
-        res.status(201).json({
-            jugador,
-            token
-        });
-    } catch (err) {
-        next(err);
-    }
-}
+const { validarRegistro, validarLogin } = require('../validators/jugadorValidator');
+const {
+    registrarJugador,
+    validarCredenciales,
+    cerrarSesion: cerrarSesionService
+} = require('../services/jugadorService');
 
 async function registrar(req, res, next) {
     try {
@@ -63,4 +43,4 @@ async function logout(req, res, next) {
     }
 }
 
-module.exports = { crearJugador, registrar, login, logout };
+module.exports = { registrar, login, logout };

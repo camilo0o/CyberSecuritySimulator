@@ -9,5 +9,6 @@ router.post('/', autenticar, empresaController.crearEmpresa);
 router.get('/:id/actividades', autenticar, actividadController.listarPorEmpresa);
 router.get('/:id', autenticar, empresaController.obtenerEstadoEmpresa);
 router.post('/:id/avanzar', autenticar, empresaController.avanzar);
+router.post('/:id/rendirse', autenticar, empresaController.rendirse);
 
 module.exports = router;

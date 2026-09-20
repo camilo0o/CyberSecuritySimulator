@@ -3,6 +3,7 @@ const Jugador = require('../models/Jugador');
 const Empresa = require('../models/Empresa');
 const Actividad = require('../models/Actividad');
 const { crearHistorial } = require('./historialService');
+const { generarActividadesDeTurno } = require('../data/databaseSeeder');
 
 function limitar(valor, minimo, maximo) {
     return Math.min(maximo, Math.max(minimo, valor));
@@ -27,28 +28,7 @@ function partidaFinalizada(empresa) {
 }
 
 function crearProximasActividades(jugadorId, turno) {
-    return [
-        {
-            jugadorId,
-            turno,
-            tipo: 'email',
-            descripcion: 'Correo sospechoso recibido',
-            dificultad: 'media',
-            nivelRiesgo: 40,
-            esMalicioso: true,
-            estado: 'pendiente'
-        },
-        {
-            jugadorId,
-            turno,
-            tipo: 'logs',
-            descripcion: 'Actividad inusual detectada en los logs',
-            dificultad: 'alta',
-            nivelRiesgo: 70,
-            esMalicioso: true,
-            estado: 'pendiente'
-        }
-    ];
+    return generarActividadesDeTurno(jugadorId, turno, 2); // 2 tickets por turno
 }
 
 async function avanzarTurno(empresaId, jugadorId) {
@@ -125,7 +105,7 @@ async function avanzarTurno(empresaId, jugadorId) {
 
             if (empresa.estado === 'activa') {
                 nuevasActividades = await Actividad.insertMany(
-                    crearProximasActividades(jugadorId, empresa.turno),
+                    await crearProximasActividades(jugadorId, empresa.turno),
                     { session }
                 );
             } else {
@@ -154,6 +134,68 @@ async function avanzarTurno(empresaId, jugadorId) {
     }
 }
 
+async function rendirse(empresaId, jugadorId) {
+    if (
+        !mongoose.isValidObjectId(empresaId) ||
+        !mongoose.isValidObjectId(jugadorId)
+    ) {
+        const error = new Error('Identificador invalido');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    const session = await mongoose.startSession();
+
+    try {
+        let resultado;
+
+        await session.withTransaction(async () => {
+            const jugador = await Jugador.findOne({
+                _id: jugadorId,
+                empresaId
+            }).session(session);
+
+            if (!jugador) {
+                const error = new Error('Empresa no encontrada');
+                error.statusCode = 404;
+                throw error;
+            }
+
+            const empresa = await Empresa.findById(empresaId).session(session);
+
+            if (!empresa) {
+                const error = new Error('Empresa no encontrada');
+                error.statusCode = 404;
+                throw error;
+            }
+
+            if (empresa.estado !== 'activa') {
+                const error = new Error('La partida ya finalizo');
+                error.statusCode = 409;
+                throw error;
+            }
+
+            empresa.estado = 'derrota';
+            await empresa.save({ session });
+
+            await crearHistorial({
+                jugadorId,
+                empresaId,
+                nombreJugador: jugador.nombre,
+                seguridadFinal: empresa.seguridad,
+                reputacionFinal: empresa.reputacion,
+                dineroFinal: empresa.dinero
+            }, session);
+
+            resultado = { empresa: empresa.toObject() };
+        });
+
+        return resultado;
+    } finally {
+        await session.endSession();
+    }
+}
+
 async function iniciarPartida(jugadorId) {
     const jugador = await Jugador.findById(jugadorId);
     if (!jugador) {
@@ -165,6 +207,10 @@ async function iniciarPartida(jugadorId) {
     const empresa = await Empresa.create({});
     jugador.empresaId = empresa._id;
     await jugador.save();
+
+    await Actividad.insertMany(
+        await crearProximasActividades(jugadorId, empresa.turno)
+    );
 
     return empresa;
 }
@@ -192,4 +238,4 @@ async function obtenerEstado(empresaId, jugadorId) {
     return empresa;
 }
 
-module.exports = { iniciarPartida, obtenerEstado, avanzarTurno };
+module.exports = { iniciarPartida, obtenerEstado, avanzarTurno, rendirse };

@@ -1,4 +1,4 @@
-const { iniciarPartida, obtenerEstado, avanzarTurno } = require('../services/empresaService');
+const { iniciarPartida, obtenerEstado, avanzarTurno, rendirse } = require('../services/empresaService');
 
 async function crearEmpresa(req, res, next) {
     try {
@@ -35,4 +35,17 @@ async function avanzar(req, res, next) {
     }
 }
 
-module.exports = { crearEmpresa, obtenerEstadoEmpresa, avanzar };
+async function rendirseController(req, res, next) {
+    try {
+        const resultado = await rendirse(
+            req.params.id,
+            req.usuario.id
+        );
+
+        res.status(200).json(resultado);
+    } catch (error) {
+        next(error);
+    }
+}
+
+module.exports = { crearEmpresa, obtenerEstadoEmpresa, avanzar, rendirse: rendirseController };

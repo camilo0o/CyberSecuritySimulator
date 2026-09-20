@@ -1,7 +1,5 @@
 const mongoose = require('mongoose');
 const Actividad = require('../models/Actividad');
-require('../models/Email');
-require('../models/Logs');
 const Jugador = require('../models/Jugador');
 const Empresa = require('../models/Empresa');
 
@@ -72,7 +70,8 @@ async function obtenerDetalleActividad(actividadId, jugadorId) {
 
 function evaluarImpacto(actividad, accion, empresa) {
     const riesgo = actividad.nivelRiesgo;
-    const esMaliciosa = actividad.esMalicioso === true || riesgo >= 60;
+    // Solo decide esMalicioso: un ticket alarmante pero legitimo no debe contar como amenaza
+    const esMaliciosa = actividad.esMalicioso === true;
     const correcta = (esMaliciosa && accion === 'bloquear') || (!esMaliciosa && accion === 'permitir');
     const impacto = { seguridad: 0, reputacion: 0, dinero: 0 };
 
