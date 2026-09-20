@@ -205,6 +205,8 @@ async function iniciarPartida(jugadorId) {
     }
 
     const empresa = await Empresa.create({});
+    await sembrarActividadesDelTurno(jugadorId, empresa.turno);
+
     jugador.empresaId = empresa._id;
     await jugador.save();
 
