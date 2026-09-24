@@ -294,6 +294,158 @@ const BANCO_TICKETS = [
         ]
     },
 
+    {
+        descripcion: 'Aplicacion de agenda que pide acceso permanente al correo',
+        dificultad: 'alta',
+        nivelRiesgo: 85,
+        esMalicioso: true,
+        correo: {
+            titulo: 'Ya podes activar el asistente de turnos',
+            remitente: 'invitaciones@agenda-facil.example',
+            destinatario: 'recepcion@empresa.com',
+            contenido: 'Hola,\n\nPreparamos un asistente para organizar los turnos de recepcion. Para vincularlo, abri la invitacion y acepta los permisos que aparecen en pantalla. No necesitas compartir tu contrasena con nosotros.\n\nUna vez conectado, el asistente seguira trabajando aunque cierres el navegador.\n\nEquipo de Agenda Facil',
+            tieneAdjunto: false,
+            nombreAdjunto: '',
+            enlace: 'https://agenda-facil.example/conectar'
+        },
+        logs: [
+            {
+                archivo: 'mail.log',
+                hora: '08:10:14',
+                contenido: 'El mensaje paso SPF, DKIM y DMARC: fue enviado por el dominio que figura en el remitente. Esto confirma el origen, pero no significa que la aplicacion ofrecida sea confiable.',
+                tipoAcceso: 'smtp'
+            },
+            {
+                archivo: 'auth.log',
+                hora: '08:13:29',
+                contenido: 'La aplicacion solicito permiso para leer todos los correos, enviar mensajes en nombre de recepcion y mantener el acceso sin que el usuario este conectado. No pidio acceso al calendario. El control de aplicaciones la bloqueo porque su identificador figura en un reporte confirmado de robo de buzones.',
+                usuario: 'recepcion',
+                tipoAcceso: 'consentimiento-aplicacion'
+            }
+        ]
+    },
+    {
+        descripcion: 'Codigo QR de estacionamiento que intenta registrar otro autenticador',
+        dificultad: 'media',
+        nivelRiesgo: 75,
+        esMalicioso: true,
+        correo: {
+            titulo: 'Credencial digital para ingresar al estacionamiento',
+            remitente: 'accesos@parking-oficina.example',
+            destinatario: 'slopez@empresa.com',
+            contenido: 'Hola,\n\nEstamos reemplazando las tarjetas del estacionamiento por credenciales digitales. Escanea con tu telefono el codigo QR del adjunto y completa la vinculacion con tu cuenta laboral.\n\nConserva la credencial para mostrarla al ingresar.\n\nAdministracion del estacionamiento',
+            tieneAdjunto: true,
+            nombreAdjunto: 'Credencial_estacionamiento.pdf',
+            enlace: ''
+        },
+        logs: [
+            {
+                archivo: 'sandbox.log',
+                hora: '09:05:20',
+                contenido: 'El PDF no contiene programas ni macros. Sin embargo, el QR lleva a parking-oficina.example/vincular, donde se pide copiar un codigo de vinculacion del autenticador corporativo. El codigo QR funciona como un enlace aunque no haya una direccion escrita en el correo.',
+                tipoAcceso: 'analisis-adjunto'
+            },
+            {
+                archivo: 'auth.log',
+                hora: '09:11:42',
+                contenido: 'Tras abrir la pagina, se intento agregar un segundo autenticador a la cuenta de slopez desde un dispositivo ajeno al inventario. El usuario rechazo la confirmacion y soporte verifico con administracion que no existe una campana de credenciales para el estacionamiento.',
+                usuario: 'slopez',
+                tipoAcceso: 'registro-mfa'
+            }
+        ]
+    },
+    {
+        descripcion: 'Renovacion inventada que deriva a una estafa por telefono',
+        dificultad: 'media',
+        nivelRiesgo: 70,
+        esMalicioso: true,
+        correo: {
+            titulo: 'Renovacion procesada: servicio de archivo digital',
+            remitente: 'renovaciones@archivo-premium.example',
+            destinatario: 'compras@empresa.com',
+            contenido: 'Estimados,\n\nLa suscripcion anual al archivo digital se renovo por 420 USD. El cargo aparecera en el siguiente estado de cuenta.\n\nSi desean cancelar, llamen al numero indicado en el comprobante adjunto y mencionen la referencia AP-208. Las cancelaciones se atienden unicamente por telefono.\n\nAtencion al cliente',
+            tieneAdjunto: true,
+            nombreAdjunto: 'Comprobante_AP208.pdf',
+            enlace: ''
+        },
+        logs: [
+            {
+                archivo: 'sandbox.log',
+                hora: '10:40:08',
+                contenido: 'El adjunto es un PDF sin codigo activo. El telefono de cancelaciones coincide con un indicador de fraude confirmado por el equipo de seguridad en otro incidente. La ausencia de malware en el archivo no descarta una estafa por llamada.',
+                tipoAcceso: 'analisis-adjunto'
+            },
+            {
+                archivo: 'proxy.log',
+                hora: '10:52:36',
+                contenido: 'Durante la llamada, el operador indico al empleado que abriera una pagina de control remoto y compartiera el codigo de acceso a su equipo para tramitar el reintegro. El proxy bloqueo la pagina por estar asociada al mismo incidente de fraude.',
+                usuario: 'compras',
+                dispositivo: 'Windows - Edge',
+                tipoAcceso: 'http'
+            }
+        ]
+    },
+    {
+        descripcion: 'Cuenta de proveedor comprometida que solicita una exportacion de clientes',
+        dificultad: 'alta',
+        nivelRiesgo: 95,
+        esMalicioso: true,
+        correo: {
+            titulo: 'Muestra de datos para calibrar el tablero comercial',
+            remitente: 'analitica@consultora-delta.example',
+            destinatario: 'operaciones@empresa.com',
+            contenido: 'Hola,\n\nPara ajustar las metricas del tablero necesitamos una exportacion del listado de clientes con nombres, telefonos e historial de compras. Suban el CSV al espacio temporal indicado abajo.\n\nUsamos este espacio porque el repositorio habitual esta en mantenimiento. Cuando terminemos la calibracion les avisamos.\n\nEquipo de Analitica',
+            tieneAdjunto: false,
+            nombreAdjunto: '',
+            enlace: 'https://intercambio-datos.example/carga/delta'
+        },
+        logs: [
+            {
+                archivo: 'mail.log',
+                hora: '13:02:17',
+                contenido: 'El mensaje llego dentro de una conversacion real con el proveedor habitual y paso SPF, DKIM y DMARC. En una verificacion por el telefono del contrato, el proveedor confirmo que su cuenta fue comprometida y que no solicito ninguna exportacion.',
+                tipoAcceso: 'smtp'
+            },
+            {
+                archivo: 'proxy.log',
+                hora: '13:06:41',
+                contenido: 'La pagina de carga pertenece a una cuenta externa sin relacion con el proveedor. Se intento enviar clientes.csv, pero el control de salida de datos bloqueo el archivo al detectar informacion personal y un destino no autorizado.',
+                usuario: 'operaciones',
+                tipoAcceso: 'carga-archivo'
+            }
+        ]
+    },
+    {
+        descripcion: 'Extension de cupones que captura sesiones del navegador',
+        dificultad: 'alta',
+        nivelRiesgo: 80,
+        esMalicioso: true,
+        correo: {
+            titulo: 'Descuentos automaticos para las compras de oficina',
+            remitente: 'beneficios@ahorro-equipos.example',
+            destinatario: 'abastecimiento@empresa.com',
+            contenido: 'Hola,\n\nNuestro comparador aplica descuentos al comprar insumos de oficina. La extension adjunta agrega un boton al navegador para buscar el mejor precio sin cambiar de pagina.\n\nSegui el instructivo del paquete para instalarla manualmente y habilita los permisos de navegacion cuando los solicite.\n\nAhorro Equipos',
+            tieneAdjunto: true,
+            nombreAdjunto: 'Comparador_oficina.zip',
+            enlace: ''
+        },
+        logs: [
+            {
+                archivo: 'sandbox.log',
+                hora: '14:18:03',
+                contenido: 'El ZIP contiene una extension de navegador e instrucciones para cargarla en modo desarrollador. Solicita leer y modificar todas las paginas visitadas y acceder a las cookies, permisos que tambien alcanzan los sistemas internos.',
+                tipoAcceso: 'analisis-adjunto'
+            },
+            {
+                archivo: 'sandbox.log',
+                hora: '14:18:45',
+                contenido: 'Al probar la extension en un navegador aislado con una cuenta ficticia, envio la cookie de sesion del portal de prueba a un servidor externo. No realizo ninguna busqueda de descuentos. El analisis confirmo robo de sesiones.',
+                dispositivo: 'Navegador de laboratorio',
+                tipoAcceso: 'analisis-comportamiento'
+            }
+        ]
+    },
+
     // ---------- Legitimos ----------
     {
         descripcion: 'Correo real de una companera confirmando una reunion',
@@ -491,6 +643,170 @@ const BANCO_TICKETS = [
                 direccionIp: '10.0.0.44',
                 ubicacion: 'Red corporativa',
                 usuario: 'lrodriguez',
+                tipoAcceso: 'http'
+            }
+        ]
+    },
+    {
+        descripcion: 'Planos confidenciales enviados en un archivo cifrado acordado',
+        dificultad: 'alta',
+        nivelRiesgo: 30,
+        esMalicioso: false,
+        correo: {
+            titulo: 'Entrega de planos de la nueva sala de capacitacion',
+            remitente: 'proyectos@estudio-sur.example',
+            destinatario: 'infraestructura@empresa.com',
+            contenido: 'Hola,\n\nAdjuntamos los planos revisados de la sala, segun la orden OS-316. El archivo esta protegido con la clave que coordinamos por telefono ayer.\n\nPor favor, confirmen si la distribucion de las mesas deja libre el acceso lateral.\n\nSaludos,\nEstudio Sur',
+            tieneAdjunto: true,
+            nombreAdjunto: 'Planos_OS316.zip',
+            enlace: ''
+        },
+        logs: [
+            {
+                archivo: 'mail.log',
+                hora: '08:35:11',
+                contenido: 'El correo paso SPF, DKIM y DMARC. La orden OS-316 registra esta entrega y el contacto coincide con el estudio contratado. Infraestructura confirmo la clave usando el telefono guardado en el contrato.',
+                tipoAcceso: 'smtp'
+            },
+            {
+                archivo: 'sandbox.log',
+                hora: '08:35:24',
+                contenido: 'El analisis inicial no pudo inspeccionar el ZIP porque esta cifrado. El resultado es pendiente de revision, no limpio ni malicioso.',
+                tipoAcceso: 'analisis-adjunto'
+            },
+            {
+                archivo: 'sandbox.log',
+                hora: '08:49:02',
+                contenido: 'Seguridad abrio el archivo en el entorno aislado con la clave verificada. Contiene tres planos PDF sin scripts, archivos ejecutables ni enlaces externos. Los nombres y el contenido coinciden con la entrega prevista en OS-316.',
+                tipoAcceso: 'revision-manual'
+            }
+        ]
+    },
+    {
+        descripcion: 'Mensaje de una lista tecnica con SPF fallido por reenvio',
+        dificultad: 'alta',
+        nivelRiesgo: 25,
+        esMalicioso: false,
+        correo: {
+            titulo: '[Comunidad de redes] Respuesta sobre cableado del laboratorio',
+            remitente: 'lucia@comunidad-redes.example',
+            destinatario: 'redes@empresa.com',
+            contenido: 'Hola,\n\nSobre la consulta que enviaron ayer: para ese laboratorio conviene separar el tendido electrico del cableado de datos y dejar identificados ambos extremos de cada tramo.\n\nPodemos seguir revisando las medidas por esta misma lista.\n\nSaludos,\nLucia',
+            tieneAdjunto: false,
+            nombreAdjunto: '',
+            enlace: ''
+        },
+        logs: [
+            {
+                archivo: 'mail.log',
+                hora: '11:04:09',
+                contenido: 'SPF fallo porque el correo llego a traves del servidor que redistribuye la lista. La firma DKIM original sigue siendo valida y esta alineada con el dominio del remitente, por lo que DMARC paso. Las cabeceras muestran el recorrido por la lista conocida.',
+                tipoAcceso: 'smtp'
+            },
+            {
+                archivo: 'mail.log',
+                hora: '11:04:10',
+                contenido: 'El identificador de la lista coincide con la suscripcion aprobada de redes@empresa.com. La respuesta referencia el mensaje que el equipo envio ayer y conserva el tema de esa consulta, sin pedir credenciales, pagos ni descargas.',
+                usuario: 'redes',
+                tipoAcceso: 'verificacion-hilo'
+            }
+        ]
+    },
+    {
+        descripcion: 'Invitacion de auditoria con acceso limitado y fecha de caducidad',
+        dificultad: 'media',
+        nivelRiesgo: 15,
+        esMalicioso: false,
+        correo: {
+            titulo: 'Acceso de revision al expediente de auditoria A-72',
+            remitente: 'accesos@auditoria-rio.example',
+            destinatario: 'calidad@empresa.com',
+            contenido: 'Estimados,\n\nHabilitamos su acceso al expediente A-72 para revisar las observaciones de la visita. La invitacion permite consultar ese expediente durante siete dias.\n\nIngresen con su cuenta corporativa habitual. Si necesitan adjuntar una respuesta, coordinaremos el permiso con la responsable de calidad.\n\nAuditoria Rio',
+            tieneAdjunto: false,
+            nombreAdjunto: '',
+            enlace: 'https://portal.auditoria-rio.example/expedientes/A-72'
+        },
+        logs: [
+            {
+                archivo: 'proxy.log',
+                hora: '12:20:31',
+                contenido: 'La direccion coincide con el portal registrado en el contrato de auditoria. La navegacion lleva al proveedor de identidad corporativo aprobado, sin formularios intermedios que recolecten la contrasena.',
+                usuario: 'calidad',
+                tipoAcceso: 'http'
+            },
+            {
+                archivo: 'auth.log',
+                hora: '12:21:08',
+                contenido: 'Calidad ingreso con MFA a una aplicacion previamente aprobada. La invitacion figura en la solicitud AUD-72: concede solo lectura del expediente indicado y caduca en siete dias. No otorga acceso al correo ni a otros archivos de la empresa.',
+                usuario: 'calidad',
+                tipoAcceso: 'acceso-invitado'
+            }
+        ]
+    },
+    {
+        descripcion: 'Encuesta anonima del comedor alojada en un servicio externo aprobado',
+        dificultad: 'baja',
+        nivelRiesgo: 10,
+        esMalicioso: false,
+        correo: {
+            titulo: 'Elegi las opciones del menu de invierno',
+            remitente: 'comedor@empresa.com',
+            destinatario: 'todos@empresa.com',
+            contenido: 'Hola a todos,\n\nEstamos preparando el menu de invierno y queremos conocer sus preferencias. La encuesta tiene tres preguntas sobre platos y horarios; es anonima y no hace falta iniciar sesion.\n\nPueden responder hasta el viernes. Tambien hay una urna junto a la entrada del comedor para quienes prefieran votar en papel.\n\nEquipo del comedor',
+            tieneAdjunto: false,
+            nombreAdjunto: '',
+            enlace: 'https://encuestas-servicio.example/comedor/invierno'
+        },
+        logs: [
+            {
+                archivo: 'mail.log',
+                hora: '10:00:12',
+                contenido: 'El correo salio de la casilla interna del comedor con las verificaciones de origen correctas. La campana y la direccion exacta de la encuesta estan registradas en la solicitud COM-19 aprobada por administracion.',
+                tipoAcceso: 'smtp'
+            },
+            {
+                archivo: 'proxy.log',
+                hora: '10:07:26',
+                contenido: 'El formulario esta alojado en el servicio externo aprobado para encuestas. Solo muestra opciones de platos y horarios; no pide nombre, correo, contrasena ni datos bancarios. Al enviarlo no redirige a otros sitios ni inicia descargas.',
+                usuario: 'apereira',
+                tipoAcceso: 'http'
+            }
+        ]
+    },
+    {
+        descripcion: 'Alerta real de respaldo incompleto por falta de espacio',
+        dificultad: 'media',
+        nivelRiesgo: 30,
+        esMalicioso: false,
+        correo: {
+            titulo: 'Respaldo nocturno incompleto: repositorio de archivo',
+            remitente: 'monitoreo@empresa.com',
+            destinatario: 'guardia.sistemas@empresa.com',
+            contenido: 'La tarea de respaldo BK-204 termino con errores a las 03:12. El repositorio de destino no tiene espacio suficiente para completar la copia.\n\nRevisen la alerta desde la consola habitual de monitoreo y apliquen el procedimiento de capacidad. La ultima copia completa sigue disponible.\n\nMensaje automatico del servicio de respaldos.',
+            tieneAdjunto: false,
+            nombreAdjunto: '',
+            enlace: ''
+        },
+        logs: [
+            {
+                archivo: 'mail.log',
+                hora: '03:12:06',
+                contenido: 'El correo fue generado por el servicio interno de monitoreo. Su identificador de evento coincide con BK-204 y el destino es la lista de guardia configurada para fallos de respaldo.',
+                tipoAcceso: 'smtp'
+            },
+            {
+                archivo: 'auth.log',
+                hora: '03:00:00',
+                contenido: 'La cuenta de servicio de respaldos inicio la tarea programada desde el servidor registrado, con sus permisos habituales. No hubo cambios de credenciales ni accesos desde equipos nuevos.',
+                usuario: 'servicio.respaldos',
+                dispositivo: 'Servidor de respaldos',
+                tipoAcceso: 'cuenta-servicio'
+            },
+            {
+                archivo: 'proxy.log',
+                hora: '07:32:19',
+                contenido: 'La guardia abrio la consola de monitoreo desde su marcador habitual. El evento BK-204 confirma el repositorio al 100% y la copia incompleta a las 03:12. La alerta corresponde a un problema operativo real y no solicita instalar programas ni compartir secretos.',
+                usuario: 'guardia.sistemas',
                 tipoAcceso: 'http'
             }
         ]
