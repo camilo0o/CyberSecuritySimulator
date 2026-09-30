@@ -197,7 +197,7 @@ async function rendirse(empresaId, jugadorId) {
     }
 }
 
-async function iniciarPartida(jugadorId) {
+async function iniciarPartida(jugadorId, nombreEmpresa) {
     const jugador = await Jugador.findById(jugadorId);
     if (!jugador) {
         const error = new Error('Jugador no encontrado');
@@ -205,7 +205,18 @@ async function iniciarPartida(jugadorId) {
         throw error;
     }
 
-    const empresa = await Empresa.create({});
+    // Si el jugador ya tiene una partida activa, no crear otra: evita
+    // duplicados si el pedido de creacion llega dos veces en paralelo
+    // (por ejemplo, en desarrollo con StrictMode, que dispara el mismo
+    // efecto dos veces al montar el dashboard).
+    if (jugador.empresaId) {
+        const empresaActual = await Empresa.findById(jugador.empresaId);
+        if (empresaActual && empresaActual.estado === 'activa') {
+            return empresaActual;
+        }
+    }
+
+    const empresa = await Empresa.create({ nombre: nombreEmpresa });
 
     jugador.empresaId = empresa._id;
     await jugador.save();

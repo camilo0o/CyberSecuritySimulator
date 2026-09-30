@@ -351,9 +351,10 @@ describe('rutas de empresas', () => {
         const respuesta = await request(app)
             .post('/empresas')
             .set('Authorization', `Bearer ${tokenPara(jugador)}`)
-            .send({});
+            .send({ nombre: 'Nortec Soluciones' });
 
         expect(respuesta.status).toBe(201);
+        expect(respuesta.body.nombre).toBe('Nortec Soluciones');
 
         const tickets = await Actividad.find({ jugadorId: jugador._id, turno: 1 });
 
@@ -363,6 +364,41 @@ describe('rutas de empresas', () => {
             expect(ticket.correo.titulo).toBeTruthy();
             expect(ticket.logs.length).toBeGreaterThan(0);
         });
+    });
+
+    it('rechaza crear una empresa sin nombre', async () => {
+        const jugador = await crearJugador('Jugador sin nombre de empresa');
+
+        const respuesta = await request(app)
+            .post('/empresas')
+            .set('Authorization', `Bearer ${tokenPara(jugador)}`)
+            .send({});
+
+        expect(respuesta.status).toBe(400);
+        expect(respuesta.body.error).toBe('El nombre de la empresa es requerido');
+    });
+
+    it('no duplica la empresa si el jugador ya tiene una partida activa', async () => {
+        const jugador = await crearJugador('Jugador con partida activa');
+        const token = tokenPara(jugador);
+
+        const primera = await request(app)
+            .post('/empresas')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ nombre: 'Primera Empresa' });
+
+        const segunda = await request(app)
+            .post('/empresas')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ nombre: 'Segunda Empresa' });
+
+        expect(primera.status).toBe(201);
+        expect(segunda.status).toBe(201);
+        expect(segunda.body._id).toBe(primera.body._id);
+        expect(segunda.body.nombre).toBe('Primera Empresa');
+
+        const empresas = await Empresa.countDocuments({});
+        expect(empresas).toBe(1);
     });
 
     it('rechaza consultar una empresa sin JWT', async () => {

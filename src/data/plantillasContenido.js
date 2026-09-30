@@ -6,15 +6,15 @@
 // archivo: mail.log (gateway de correo), auth.log (inicios de sesion),
 //          proxy.log (navegacion web), sandbox.log (analisis de adjuntos)
 //
-// El texto de "contenido" en cada log esta escrito en espanol simple, para
-// que se entienda sin ser experto en ciberseguridad (no hace falta saber
-// leer sintaxis de syslog real). Los datos tecnicos puntuales (IP, usuario,
-// dispositivo, ubicacion) quedan en sus propios campos.
+// El campo "contenido" de cada log esta escrito en espanol llano a proposito
+// (no como una linea cruda de syslog): el jugador no necesita ser un experto
+// en ciberseguridad para leerlo, pero sigue mencionando los terminos tecnicos
+// reales (SPF, DKIM, dominio recien creado, extension doble, etc.) para que
+// haya algo que aprender e ir reconociendo turno a turno.
 
 const BANCO_TICKETS = [
-    // ---------- Maliciosos ----------
     {
-        descripcion: 'Correo de restablecimiento de contrasena con enlace externo',
+        descripcion: 'cfernandez reporta un aviso de contrasena expirada',
         dificultad: 'media',
         nivelRiesgo: 75,
         esMalicioso: true,
@@ -22,7 +22,7 @@ const BANCO_TICKETS = [
             titulo: 'Tu contrasena ha expirado',
             remitente: 'soporte@segur1dad-corp.com',
             destinatario: 'cfernandez@empresa.com',
-            contenido: 'Hola,\n\nDetectamos actividad inusual en tu cuenta corporativa durante las ultimas horas. Por tu seguridad, limitamos temporalmente el acceso hasta que confirmes tu identidad.\n\nPara evitar que tu cuenta quede bloqueada de forma permanente, ingresa al siguiente enlace y verifica tus datos antes de las proximas 24 horas.\n\nSi no reconoces esta actividad, te recomendamos cambiar tu contrasena de inmediato desde el portal oficial.\n\nEquipo de Soporte',
+            contenido: 'Hola,\n\nDetectamos actividad inusual en tu cuenta durante las ultimas horas y, por tu seguridad, tu contrasena fue marcada para renovacion inmediata. Si no completas la verificacion dentro de las proximas 24 horas, tu cuenta quedara bloqueada de forma permanente y perderas el acceso al correo corporativo.\n\nPara evitarlo, ingresa al enlace de abajo y segui los pasos para confirmar tu identidad y establecer una nueva contrasena.\n\nSaludos,\nEquipo de Soporte',
             tieneAdjunto: false,
             nombreAdjunto: '',
             enlace: 'https://segur1dad-corp.com/reset'
@@ -31,7 +31,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'mail.log',
                 hora: '08:41:12',
-                contenido: 'Llego un correo de soporte@segur1dad-corp.com. La verificacion de origen (SPF) fallo, y tambien fallaron DKIM y DMARC: son tres controles que confirman si el servidor que mando el correo tiene permiso para usar ese dominio, y los tres dieron mal.',
+                contenido: 'Llego un correo de soporte@segur1dad-corp.com dirigido a cfernandez. La verificacion de origen (SPF) fallo, y tambien fallaron DKIM y DMARC: son tres controles que confirman si el servidor que mando el correo tiene permiso para usar ese dominio, y los tres dieron mal.',
                 direccionIp: '185.220.101.7',
                 ubicacion: 'Moscu, Rusia',
                 usuario: 'cfernandez',
@@ -40,7 +40,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'proxy.log',
                 hora: '08:43:05',
-                contenido: 'Alguien de la red interna (cfernandez) entro al enlace del correo. El sitio todavia no tiene una categoria conocida y el dominio se registro hace solo 3 dias: un dominio tan nuevo es una senal tipica de phishing.',
+                contenido: 'cfernandez entro al enlace del correo (segur1dad-corp.com/reset) desde la red corporativa. El sitio todavia no esta clasificado por el proxy, y el dominio se registro hace apenas 3 dias: algo muy reciente para un sitio que dice pertenecer a una empresa de soporte.',
                 direccionIp: '10.0.0.37',
                 ubicacion: 'Red corporativa',
                 dispositivo: 'Windows - Chrome',
@@ -50,7 +50,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'auth.log',
                 hora: '08:52:40',
-                contenido: 'Se registro un inicio de sesion exitoso para cfernandez, pero desde Moscu, Rusia, y desde un dispositivo que nunca se habia usado antes. No es lo esperable para alguien que trabaja desde Paysandu.',
+                contenido: 'Se acepto una contrasena valida para cfernandez, pero el inicio de sesion vino desde Moscu, Rusia, en un dispositivo que nunca se habia usado antes, y no desde la red de la oficina.',
                 direccionIp: '185.220.101.7',
                 ubicacion: 'Moscu, Rusia',
                 dispositivo: 'Linux - Chrome',
@@ -60,7 +60,7 @@ const BANCO_TICKETS = [
         ]
     },
     {
-        descripcion: 'Factura con adjunto ejecutable disfrazado de PDF',
+        descripcion: 'Contabilidad recibio una factura pendiente de pago',
         dificultad: 'alta',
         nivelRiesgo: 90,
         esMalicioso: true,
@@ -68,7 +68,7 @@ const BANCO_TICKETS = [
             titulo: 'Factura pendiente de pago #4471',
             remitente: 'facturacion@proveedor-logistico.net',
             destinatario: 'contabilidad@empresa.com',
-            contenido: 'Estimados,\n\nAdjuntamos la factura correspondiente al pedido #4471, la cual se encuentra vencida desde la semana pasada.\n\nLes solicitamos procesar el pago a la brevedad para evitar recargos por mora. Cualquier consulta sobre el detalle de la factura, quedamos a disposicion.\n\nSaludos,\nDepartamento de Facturacion',
+            contenido: 'Estimados,\n\nAdjuntamos la factura correspondiente a los servicios prestados el mes pasado, la cual se encuentra vencida desde hace varios dias. Les pedimos procesar el pago a la brevedad para evitar recargos por mora.\n\nCualquier consulta sobre el detalle de la factura, no duden en contactarnos.\n\nSaludos cordiales,\nDepartamento de Facturacion',
             tieneAdjunto: true,
             nombreAdjunto: 'Factura_4471.pdf',
             enlace: ''
@@ -77,7 +77,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'mail.log',
                 hora: '10:02:33',
-                contenido: 'El correo llego de facturacion@proveedor-logistico.net. La verificacion SPF paso, pero es la primera vez que este remitente le escribe a la empresa: no hay ningun historial previo de intercambio con este dominio.',
+                contenido: 'Llego un correo de facturacion@proveedor-logistico.net. La verificacion SPF paso, pero no tiene firma DKIM, y es la primera vez que la empresa recibe un correo de este remitente.',
                 direccionIp: '45.95.147.12',
                 ubicacion: 'Amsterdam, Paises Bajos',
                 tipoAcceso: 'smtp'
@@ -85,13 +85,13 @@ const BANCO_TICKETS = [
             {
                 archivo: 'sandbox.log',
                 hora: '10:02:51',
-                contenido: 'El adjunto "Factura_4471.pdf" en realidad no es un PDF: es un programa ejecutable de Windows disfrazado con doble extension (".pdf.exe"). El analisis automatico lo marco como malicioso, de la familia de malware AgentTesla (un troyano que roba contrasenas).',
+                contenido: 'El adjunto Factura_4471.pdf en realidad no es un PDF: al analizarlo resulto ser un programa ejecutable (.exe) disfrazado con una doble extension (.pdf.exe). El analisis automatico lo marco como malicioso, de la familia de malware AgentTesla.',
                 tipoAcceso: 'analisis-adjunto'
             }
         ]
     },
     {
-        descripcion: 'Suplantacion del gerente general pidiendo una transferencia urgente',
+        descripcion: 'Finanzas recibio un pedido urgente de transferencia de gerencia',
         dificultad: 'alta',
         nivelRiesgo: 85,
         esMalicioso: true,
@@ -99,7 +99,7 @@ const BANCO_TICKETS = [
             titulo: 'Necesito que hagas esto de inmediato',
             remitente: 'gerencia.general@empresa-corp.co',
             destinatario: 'finanzas@empresa.com',
-            contenido: 'Hola,\n\nEstoy en una reunion importante y no puedo atender llamadas en este momento. Necesito que hagas una transferencia urgente de 8.000 USD a un proveedor nuevo, te paso los datos bancarios por este mismo correo.\n\nEs confidencial, asi que no lo comentes con nadie del equipo hasta que yo lo autorice formalmente. Necesito que esto se resuelva hoy mismo antes del cierre bancario.\n\nGracias por la rapidez,\nGerencia General',
+            contenido: 'Hola,\n\nEstoy en una reunion y no puedo atender llamadas en este momento. Necesito que hagas una transferencia de 8.000 USD a un proveedor nuevo lo antes posible, es urgente y no puede esperar hasta manana.\n\nTe paso los datos bancarios por este medio para agilizar el tramite. Por favor no lo comentes con nadie del equipo hasta que se resuelva, es confidencial.\n\nGracias,\nGerencia General',
             tieneAdjunto: false,
             nombreAdjunto: '',
             enlace: ''
@@ -108,7 +108,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'mail.log',
                 hora: '15:17:09',
-                contenido: 'El correo dice ser de gerencia.general@empresa-corp.co, pero configuraron que las respuestas vayan a otra casilla distinta (gerente.pagos2024@gmail.com), una cuenta de Gmail gratuita. Ademas, vino desde Lagos, Nigeria, y fallaron tanto SPF como DMARC.',
+                contenido: 'Llego un correo que dice ser de gerencia.general@empresa-corp.co, pero las respuestas se redirigen a otra casilla distinta (gerente.pagos2024@gmail.com). Tanto SPF como DMARC fallaron.',
                 direccionIp: '102.89.34.11',
                 ubicacion: 'Lagos, Nigeria',
                 tipoAcceso: 'smtp'
@@ -116,7 +116,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'auth.log',
                 hora: '15:10:44',
-                contenido: 'El gerente real (rgarcia) si tiene una sesion activa ese mismo dia, pero fue iniciada desde la oficina central en Paysandu, no desde donde se mando el correo: la persona real estaba trabajando normalmente en la oficina.',
+                contenido: 'La gerente real (rgarcia) si inicio sesion ese mismo dia, pero desde la oficina central y a una hora distinta a la del correo urgente: no hay nada que indique que estuviera enviando ese pedido en ese momento.',
                 direccionIp: '10.0.0.8',
                 ubicacion: 'Oficina central',
                 dispositivo: 'MacOS - Safari',
@@ -126,7 +126,7 @@ const BANCO_TICKETS = [
         ]
     },
     {
-        descripcion: 'Phishing que simula el portal de recursos humanos',
+        descripcion: 'Varios empleados recibieron un pedido de RRHH para actualizar datos bancarios',
         dificultad: 'media',
         nivelRiesgo: 65,
         esMalicioso: true,
@@ -134,7 +134,7 @@ const BANCO_TICKETS = [
             titulo: 'Actualiza tus datos bancarios para la nomina',
             remitente: 'rrhh@empresa-nomina.info',
             destinatario: 'todos@empresa.com',
-            contenido: 'Estimado colaborador,\n\nDebido a la migracion a nuestra nueva plataforma de gestion de nomina, es necesario que actualices tus datos bancarios antes del cierre del periodo.\n\nSi no completas la actualizacion a tiempo, tu proximo pago podria demorarse. El proceso toma solo unos minutos, ingresa al enlace y segui los pasos indicados.\n\nGracias por tu colaboracion,\nRecursos Humanos',
+            contenido: 'Estimado/a colaborador/a,\n\nDebido a un cambio en la plataforma de gestion de nomina, es necesario que actualices tus datos bancarios antes del cierre del mes. Si no completas este paso, tu proximo pago podria demorarse.\n\nPor favor ingresa al enlace y completa el formulario con tus datos actualizados a la brevedad.\n\nSaludos,\nRecursos Humanos',
             tieneAdjunto: false,
             nombreAdjunto: '',
             enlace: 'http://empresa-nomina.info/actualizar-datos'
@@ -143,7 +143,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'mail.log',
                 hora: '09:30:02',
-                contenido: 'El correo se envio a 148 destinatarios a la vez desde rrhh@empresa-nomina.info, un dominio que no es el de la empresa. La verificacion SPF dio un resultado dudoso (ni bien ni mal), algo tipico de dominios mal configurados o falsificados.',
+                contenido: 'El correo llego de rrhh@empresa-nomina.info, un dominio que no es el de la empresa, y se mando a 148 destinatarios a la vez. La verificacion SPF dio un resultado intermedio (softfail), que tampoco es una buena senal.',
                 direccionIp: '194.26.29.40',
                 ubicacion: 'Exterior',
                 tipoAcceso: 'smtp'
@@ -151,7 +151,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'proxy.log',
                 hora: '09:34:18',
-                contenido: 'Un empleado (apereira) entro al enlace del correo. El proxy ya lo clasifico como "phishing" y detecto que el dominio se creo hace apenas 2 dias y no tiene certificado de seguridad valido.',
+                contenido: 'apereira completo el formulario en empresa-nomina.info/actualizar-datos desde la red corporativa. El proxy clasifico ese sitio como phishing, el dominio se registro hace solo 2 dias y no tiene certificado de seguridad.',
                 direccionIp: '10.0.0.21',
                 ubicacion: 'Red corporativa',
                 dispositivo: 'Windows - Chrome',
@@ -161,7 +161,7 @@ const BANCO_TICKETS = [
         ]
     },
     {
-        descripcion: 'Planilla con macro maliciosa enviada por un supuesto socio',
+        descripcion: 'Gerencia de ventas recibio un reporte trimestral con adjunto',
         dificultad: 'alta',
         nivelRiesgo: 80,
         esMalicioso: true,
@@ -169,7 +169,7 @@ const BANCO_TICKETS = [
             titulo: 'Reporte de ventas del trimestre',
             remitente: 'ventas.regional@empresa-partner.biz',
             destinatario: 'gerente.ventas@empresa.com',
-            contenido: 'Hola,\n\nTe comparto el reporte de ventas del trimestre que me pediste la semana pasada. El archivo tiene algunos graficos dinamicos, asi que vas a necesitar habilitar el contenido (macros) para que se vean correctamente al abrirlo.\n\nCualquier duda sobre los numeros me avisas.\n\nSaludos',
+            contenido: 'Hola,\n\nAqui esta el reporte de ventas del trimestre que me pediste. El archivo tiene algunos graficos dinamicos, asi que necesitas habilitar el contenido (macros) al abrirlo para que se vean correctamente.\n\nCualquier duda sobre los numeros me avisas.\n\nSaludos,\nVentas Regional',
             tieneAdjunto: true,
             nombreAdjunto: 'Reporte_Q3.xlsm',
             enlace: ''
@@ -178,7 +178,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'mail.log',
                 hora: '11:48:27',
-                contenido: 'Llego de ventas.regional@empresa-partner.biz. La verificacion SPF paso, pero no tiene DKIM configurado y es la primera vez que este remitente le escribe a la empresa.',
+                contenido: 'Llego de ventas.regional@empresa-partner.biz. La verificacion SPF paso pero no hay firma DKIM, y es la primera vez que este remitente le escribe a la empresa.',
                 direccionIp: '91.219.237.100',
                 ubicacion: 'Exterior',
                 tipoAcceso: 'smtp'
@@ -186,13 +186,13 @@ const BANCO_TICKETS = [
             {
                 archivo: 'sandbox.log',
                 hora: '11:48:40',
-                contenido: 'El archivo "Reporte_Q3.xlsm" contiene una macro que se ejecuta sola al abrirlo, y esa macro llama a PowerShell con un comando oculto que intenta conectarse a una direccion externa. El analisis automatico lo marco como malicioso.',
+                contenido: 'El archivo Reporte_Q3.xlsm tiene una macro que se ejecuta automaticamente al abrirlo (AutoOpen) y que lanza PowerShell con un comando oculto, conectandose despues a una direccion externa. El analisis lo marco como malicioso.',
                 tipoAcceso: 'analisis-adjunto'
             }
         ]
     },
     {
-        descripcion: 'Falso soporte tecnico con enlace acortado a un ejecutable',
+        descripcion: 'lrodriguez reporta un aviso de actualizacion de seguridad',
         dificultad: 'media',
         nivelRiesgo: 55,
         esMalicioso: true,
@@ -200,7 +200,7 @@ const BANCO_TICKETS = [
             titulo: 'Tu equipo requiere una actualizacion de seguridad urgente',
             remitente: 'it-support@empresa-updates.com',
             destinatario: 'lrodriguez@empresa.com',
-            contenido: 'Hola,\n\nDurante un analisis rutinario detectamos una vulnerabilidad de seguridad en tu equipo que debe corregirse cuanto antes.\n\nDescarga el parche de seguridad desde el siguiente enlace e instalalo hoy mismo para evitar quedar expuesto. El proceso es automatico y no deberia tomar mas de un par de minutos.\n\nSaludos,\nSoporte Tecnico',
+            contenido: 'Hola,\n\nSe detecto una vulnerabilidad critica de seguridad en tu equipo que requiere ser corregida de inmediato. Por favor, descarga el parche de seguridad desde el siguiente enlace y ejecutalo antes de que termine el dia.\n\nSi no lo haces, tu equipo podria quedar expuesto a un ataque.\n\nSaludos,\nSoporte IT',
             tieneAdjunto: false,
             nombreAdjunto: '',
             enlace: 'https://bit.ly/3xUpdt3'
@@ -209,7 +209,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'proxy.log',
                 hora: '14:05:51',
-                contenido: 'Un empleado (lrodriguez) hizo clic en un enlace acortado. Ese enlace en realidad redirige a otro sitio distinto que ofrece descargar un archivo .exe, no un parche real de Windows.',
+                contenido: 'lrodriguez hizo clic en el enlace acortado del correo (bit.ly), y este redirigio a cdn-files-update.xyz, un sitio distinto, para descargar un archivo .exe.',
                 direccionIp: '10.0.0.44',
                 ubicacion: 'Red corporativa',
                 dispositivo: 'Windows - Edge',
@@ -219,7 +219,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'mail.log',
                 hora: '14:01:13',
-                contenido: 'El remitente dice ser "it-support@empresa-updates.com", pero el soporte real de la empresa usa la casilla soporte_it@empresa.com. Ademas, la verificacion SPF de ese dominio fallo.',
+                contenido: 'El correo llego de it-support@empresa-updates.com, un dominio ajeno a la empresa. La verificacion SPF fallo.',
                 direccionIp: '203.0.113.55',
                 ubicacion: 'Desconocida',
                 tipoAcceso: 'smtp'
@@ -227,7 +227,7 @@ const BANCO_TICKETS = [
         ]
     },
     {
-        descripcion: 'Correo que parece de una companera pero viene de afuera',
+        descripcion: 'nmartinez recibio un documento compartido por una companera',
         dificultad: 'alta',
         nivelRiesgo: 70,
         esMalicioso: true,
@@ -235,7 +235,7 @@ const BANCO_TICKETS = [
             titulo: 'Te comparti un documento',
             remitente: 'maria.gomez@empresa.com',
             destinatario: 'nmartinez@empresa.com',
-            contenido: 'Hola!\n\nTe comparti el documento del proyecto que estuvimos armando, quedo bastante completo. Fijate que revises sobre todo la seccion de cronograma, que la actualice hoy.\n\nCualquier comentario, avisame asi lo ajustamos antes de la entrega.\n\nSaludos!',
+            contenido: 'Hola!\n\nTe comparto el documento del proyecto que estuvimos hablando, quedo bastante completo. Revisalo cuando puedas y dejame tus comentarios, sobre todo en la seccion de cronograma.\n\nCualquier cosa me escribis.\n\nSaludos,\nMaria',
             tieneAdjunto: false,
             nombreAdjunto: '',
             enlace: 'https://empresa-sharepoint.com/doc/proyecto'
@@ -244,7 +244,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'mail.log',
                 hora: '16:22:40',
-                contenido: 'El correo dice ser de maria.gomez@empresa.com, pero no salio por el servidor de correo de la empresa: vino desde una IP externa asociada a la red Tor, y fallaron tanto SPF como DKIM. Alguien esta usando su nombre, no es ella.',
+                contenido: 'El correo dice ser de maria.gomez@empresa.com, pero no vino desde la red interna (los correos internos reales salen siempre desde la misma direccion fija) sino desde un nodo Tor en el exterior. Fallaron tanto SPF como DKIM.',
                 direccionIp: '185.100.87.202',
                 ubicacion: 'Exterior (nodo Tor)',
                 tipoAcceso: 'smtp'
@@ -252,14 +252,14 @@ const BANCO_TICKETS = [
             {
                 archivo: 'auth.log',
                 hora: '16:20:05',
-                contenido: 'Maria Gomez no tiene ninguna sesion activa: esta de vacaciones hasta el lunes. No pudo haber mandado este correo ella misma en este momento.',
+                contenido: 'Maria Gomez no tiene ninguna sesion activa en este momento: esta de vacaciones hasta el lunes, asi que no pudo haber mandado este correo ella misma.',
                 usuario: 'maria.gomez',
                 tipoAcceso: 'directorio'
             }
         ]
     },
     {
-        descripcion: 'Premio falso de un sorteo internacional',
+        descripcion: 'dvargas reporta un correo de un sorteo',
         dificultad: 'baja',
         nivelRiesgo: 45,
         esMalicioso: true,
@@ -267,7 +267,7 @@ const BANCO_TICKETS = [
             titulo: 'Has sido seleccionado como ganador',
             remitente: 'premios@sorteo-internacional.com',
             destinatario: 'dvargas@empresa.com',
-            contenido: 'Felicitaciones!\n\nTu direccion de correo fue seleccionada al azar entre miles de participantes como ganadora de nuestro sorteo internacional. El premio es de 5.000 USD, listo para ser reclamado.\n\nPara recibir tu premio, hace clic en el enlace y completa tus datos antes de que la oferta expire en 48 horas.\n\nNo dejes pasar esta oportunidad unica!',
+            contenido: 'Felicidades!\n\nHas sido seleccionado como ganador de nuestro sorteo internacional, con un premio de 5.000 USD. Para reclamarlo, hace clic en el enlace de abajo y completa tus datos antes de que expire la oferta, en las proximas 24 horas.\n\nNo dejes pasar esta oportunidad!\n\nSaludos,\nSorteo Internacional',
             tieneAdjunto: false,
             nombreAdjunto: '',
             enlace: 'https://sorteo-internacional.com/reclamar'
@@ -276,7 +276,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'mail.log',
                 hora: '07:55:18',
-                contenido: 'El correo viene de premios@sorteo-internacional.com desde Lagos, Nigeria. No tiene ninguna verificacion SPF configurada y el sistema antispam le asigno un puntaje de riesgo muy alto.',
+                contenido: 'El correo llego de premios@sorteo-internacional.com sin ninguna verificacion de origen configurada (SPF ausente), y el sistema antispam le asigno un puntaje muy alto de sospecha (8.7 sobre 10).',
                 direccionIp: '41.203.72.19',
                 ubicacion: 'Lagos, Nigeria',
                 tipoAcceso: 'smtp'
@@ -284,7 +284,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'proxy.log',
                 hora: '07:58:02',
-                contenido: 'Un empleado (dvargas) entro al enlace. El proxy ya tiene ese sitio clasificado como fraude, pero por alguna razon no llego a bloquear el acceso.',
+                contenido: 'dvargas entro al enlace para reclamar el premio. El proxy clasifico el sitio directamente como fraude, aunque todavia no llego a bloquearlo.',
                 direccionIp: '10.0.0.33',
                 ubicacion: 'Red corporativa',
                 dispositivo: 'MacOS - Safari',
@@ -295,160 +295,7 @@ const BANCO_TICKETS = [
     },
 
     {
-        descripcion: 'Aplicacion de agenda que pide acceso permanente al correo',
-        dificultad: 'alta',
-        nivelRiesgo: 85,
-        esMalicioso: true,
-        correo: {
-            titulo: 'Ya podes activar el asistente de turnos',
-            remitente: 'invitaciones@agenda-facil.example',
-            destinatario: 'recepcion@empresa.com',
-            contenido: 'Hola,\n\nPreparamos un asistente para organizar los turnos de recepcion. Para vincularlo, abri la invitacion y acepta los permisos que aparecen en pantalla. No necesitas compartir tu contrasena con nosotros.\n\nUna vez conectado, el asistente seguira trabajando aunque cierres el navegador.\n\nEquipo de Agenda Facil',
-            tieneAdjunto: false,
-            nombreAdjunto: '',
-            enlace: 'https://agenda-facil.example/conectar'
-        },
-        logs: [
-            {
-                archivo: 'mail.log',
-                hora: '08:10:14',
-                contenido: 'El mensaje paso SPF, DKIM y DMARC: fue enviado por el dominio que figura en el remitente. Esto confirma el origen, pero no significa que la aplicacion ofrecida sea confiable.',
-                tipoAcceso: 'smtp'
-            },
-            {
-                archivo: 'auth.log',
-                hora: '08:13:29',
-                contenido: 'La aplicacion solicito permiso para leer todos los correos, enviar mensajes en nombre de recepcion y mantener el acceso sin que el usuario este conectado. No pidio acceso al calendario. El control de aplicaciones la bloqueo porque su identificador figura en un reporte confirmado de robo de buzones.',
-                usuario: 'recepcion',
-                tipoAcceso: 'consentimiento-aplicacion'
-            }
-        ]
-    },
-    {
-        descripcion: 'Codigo QR de estacionamiento que intenta registrar otro autenticador',
-        dificultad: 'media',
-        nivelRiesgo: 75,
-        esMalicioso: true,
-        correo: {
-            titulo: 'Credencial digital para ingresar al estacionamiento',
-            remitente: 'accesos@parking-oficina.example',
-            destinatario: 'slopez@empresa.com',
-            contenido: 'Hola,\n\nEstamos reemplazando las tarjetas del estacionamiento por credenciales digitales. Escanea con tu telefono el codigo QR del adjunto y completa la vinculacion con tu cuenta laboral.\n\nConserva la credencial para mostrarla al ingresar.\n\nAdministracion del estacionamiento',
-            tieneAdjunto: true,
-            nombreAdjunto: 'Credencial_estacionamiento.pdf',
-            enlace: ''
-        },
-        logs: [
-            {
-                archivo: 'sandbox.log',
-                hora: '09:05:20',
-                contenido: 'El PDF no contiene programas ni macros. Sin embargo, el QR lleva a parking-oficina.example/vincular, donde se pide copiar un codigo de vinculacion del autenticador corporativo. El codigo QR funciona como un enlace aunque no haya una direccion escrita en el correo.',
-                tipoAcceso: 'analisis-adjunto'
-            },
-            {
-                archivo: 'auth.log',
-                hora: '09:11:42',
-                contenido: 'Tras abrir la pagina, se intento agregar un segundo autenticador a la cuenta de slopez desde un dispositivo ajeno al inventario. El usuario rechazo la confirmacion y soporte verifico con administracion que no existe una campana de credenciales para el estacionamiento.',
-                usuario: 'slopez',
-                tipoAcceso: 'registro-mfa'
-            }
-        ]
-    },
-    {
-        descripcion: 'Renovacion inventada que deriva a una estafa por telefono',
-        dificultad: 'media',
-        nivelRiesgo: 70,
-        esMalicioso: true,
-        correo: {
-            titulo: 'Renovacion procesada: servicio de archivo digital',
-            remitente: 'renovaciones@archivo-premium.example',
-            destinatario: 'compras@empresa.com',
-            contenido: 'Estimados,\n\nLa suscripcion anual al archivo digital se renovo por 420 USD. El cargo aparecera en el siguiente estado de cuenta.\n\nSi desean cancelar, llamen al numero indicado en el comprobante adjunto y mencionen la referencia AP-208. Las cancelaciones se atienden unicamente por telefono.\n\nAtencion al cliente',
-            tieneAdjunto: true,
-            nombreAdjunto: 'Comprobante_AP208.pdf',
-            enlace: ''
-        },
-        logs: [
-            {
-                archivo: 'sandbox.log',
-                hora: '10:40:08',
-                contenido: 'El adjunto es un PDF sin codigo activo. El telefono de cancelaciones coincide con un indicador de fraude confirmado por el equipo de seguridad en otro incidente. La ausencia de malware en el archivo no descarta una estafa por llamada.',
-                tipoAcceso: 'analisis-adjunto'
-            },
-            {
-                archivo: 'proxy.log',
-                hora: '10:52:36',
-                contenido: 'Durante la llamada, el operador indico al empleado que abriera una pagina de control remoto y compartiera el codigo de acceso a su equipo para tramitar el reintegro. El proxy bloqueo la pagina por estar asociada al mismo incidente de fraude.',
-                usuario: 'compras',
-                dispositivo: 'Windows - Edge',
-                tipoAcceso: 'http'
-            }
-        ]
-    },
-    {
-        descripcion: 'Cuenta de proveedor comprometida que solicita una exportacion de clientes',
-        dificultad: 'alta',
-        nivelRiesgo: 95,
-        esMalicioso: true,
-        correo: {
-            titulo: 'Muestra de datos para calibrar el tablero comercial',
-            remitente: 'analitica@consultora-delta.example',
-            destinatario: 'operaciones@empresa.com',
-            contenido: 'Hola,\n\nPara ajustar las metricas del tablero necesitamos una exportacion del listado de clientes con nombres, telefonos e historial de compras. Suban el CSV al espacio temporal indicado abajo.\n\nUsamos este espacio porque el repositorio habitual esta en mantenimiento. Cuando terminemos la calibracion les avisamos.\n\nEquipo de Analitica',
-            tieneAdjunto: false,
-            nombreAdjunto: '',
-            enlace: 'https://intercambio-datos.example/carga/delta'
-        },
-        logs: [
-            {
-                archivo: 'mail.log',
-                hora: '13:02:17',
-                contenido: 'El mensaje llego dentro de una conversacion real con el proveedor habitual y paso SPF, DKIM y DMARC. En una verificacion por el telefono del contrato, el proveedor confirmo que su cuenta fue comprometida y que no solicito ninguna exportacion.',
-                tipoAcceso: 'smtp'
-            },
-            {
-                archivo: 'proxy.log',
-                hora: '13:06:41',
-                contenido: 'La pagina de carga pertenece a una cuenta externa sin relacion con el proveedor. Se intento enviar clientes.csv, pero el control de salida de datos bloqueo el archivo al detectar informacion personal y un destino no autorizado.',
-                usuario: 'operaciones',
-                tipoAcceso: 'carga-archivo'
-            }
-        ]
-    },
-    {
-        descripcion: 'Extension de cupones que captura sesiones del navegador',
-        dificultad: 'alta',
-        nivelRiesgo: 80,
-        esMalicioso: true,
-        correo: {
-            titulo: 'Descuentos automaticos para las compras de oficina',
-            remitente: 'beneficios@ahorro-equipos.example',
-            destinatario: 'abastecimiento@empresa.com',
-            contenido: 'Hola,\n\nNuestro comparador aplica descuentos al comprar insumos de oficina. La extension adjunta agrega un boton al navegador para buscar el mejor precio sin cambiar de pagina.\n\nSegui el instructivo del paquete para instalarla manualmente y habilita los permisos de navegacion cuando los solicite.\n\nAhorro Equipos',
-            tieneAdjunto: true,
-            nombreAdjunto: 'Comparador_oficina.zip',
-            enlace: ''
-        },
-        logs: [
-            {
-                archivo: 'sandbox.log',
-                hora: '14:18:03',
-                contenido: 'El ZIP contiene una extension de navegador e instrucciones para cargarla en modo desarrollador. Solicita leer y modificar todas las paginas visitadas y acceder a las cookies, permisos que tambien alcanzan los sistemas internos.',
-                tipoAcceso: 'analisis-adjunto'
-            },
-            {
-                archivo: 'sandbox.log',
-                hora: '14:18:45',
-                contenido: 'Al probar la extension en un navegador aislado con una cuenta ficticia, envio la cookie de sesion del portal de prueba a un servidor externo. No realizo ninguna busqueda de descuentos. El analisis confirmo robo de sesiones.',
-                dispositivo: 'Navegador de laboratorio',
-                tipoAcceso: 'analisis-comportamiento'
-            }
-        ]
-    },
-
-    // ---------- Legitimos ----------
-    {
-        descripcion: 'Correo real de una companera confirmando una reunion',
+        descripcion: 'El equipo de desarrollo recibio una confirmacion de reunion',
         dificultad: 'baja',
         nivelRiesgo: 5,
         esMalicioso: false,
@@ -456,7 +303,7 @@ const BANCO_TICKETS = [
             titulo: 'Confirmacion reunion de equipo del jueves',
             remitente: 'maria.gomez@empresa.com',
             destinatario: 'equipo.desarrollo@empresa.com',
-            contenido: 'Hola equipo,\n\nConfirmo la reunion del jueves a las 10am para revisar el sprint. Vamos a repasar el avance de las tareas pendientes y planificar la proxima semana.\n\nSi alguien no puede asistir, avisen con anticipacion para reorganizar la agenda.\n\nNos vemos el jueves!',
+            contenido: 'Hola equipo,\n\nConfirmo la reunion de seguimiento del jueves a las 10am para revisar el avance del sprint actual. Vamos a repasar las tareas pendientes y planificar la proxima semana.\n\nNos vemos en la sala de siempre.\n\nSaludos,\nMaria',
             tieneAdjunto: false,
             nombreAdjunto: '',
             enlace: ''
@@ -465,7 +312,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'mail.log',
                 hora: '09:12:03',
-                contenido: 'El correo de maria.gomez@empresa.com salio por el servidor interno de la empresa, y paso tanto la verificacion SPF como DKIM: es un correo interno legitimo.',
+                contenido: 'El correo salio desde la direccion interna de la empresa (relay interno), y paso correctamente las verificaciones SPF y DKIM.',
                 direccionIp: '10.0.0.2',
                 ubicacion: 'Red corporativa',
                 tipoAcceso: 'smtp'
@@ -473,7 +320,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'auth.log',
                 hora: '08:47:31',
-                contenido: 'Maria Gomez inicio sesion esa misma manana desde la oficina central, con un dispositivo ya registrado. Todo consistente con que ella mando el correo.',
+                contenido: 'Maria Gomez inicio sesion ese mismo dia desde la oficina central, con un dispositivo ya registrado a su nombre.',
                 direccionIp: '10.0.0.19',
                 ubicacion: 'Oficina central',
                 dispositivo: 'Windows - Outlook',
@@ -483,7 +330,7 @@ const BANCO_TICKETS = [
         ]
     },
     {
-        descripcion: 'Factura real del proveedor de hosting',
+        descripcion: 'Contabilidad recibio la factura mensual de hosting',
         dificultad: 'media',
         nivelRiesgo: 10,
         esMalicioso: false,
@@ -491,7 +338,7 @@ const BANCO_TICKETS = [
             titulo: 'Factura de servicios de hosting - Octubre',
             remitente: 'facturacion@hostingcloud.com',
             destinatario: 'contabilidad@empresa.com',
-            contenido: 'Estimados,\n\nAdjuntamos la factura correspondiente al mes de octubre por los servicios de hosting contratados. El detalle de los servicios facturados se encuentra en el archivo adjunto.\n\nEl vencimiento del pago es a los 15 dias de emitida esta factura, segun las condiciones habituales de nuestro contrato.\n\nSaludos,\nFacturacion HostingCloud',
+            contenido: 'Estimados,\n\nAdjuntamos la factura correspondiente al mes de octubre por los servicios de hosting contratados. El monto y el detalle de los servicios se encuentran en el archivo adjunto.\n\nComo siempre, el pago se procesa segun los terminos habituales acordados.\n\nSaludos,\nFacturacion HostingCloud',
             tieneAdjunto: true,
             nombreAdjunto: 'Factura_Octubre.pdf',
             enlace: ''
@@ -500,7 +347,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'mail.log',
                 hora: '06:30:44',
-                contenido: 'El correo de facturacion@hostingcloud.com paso SPF, DKIM y DMARC, y la empresa tiene 12 meses de historial de correos previos con este remitente.',
+                contenido: 'El correo llego de facturacion@hostingcloud.com, paso SPF, DKIM y DMARC correctamente, y la empresa tiene un historial de 12 meses recibiendo correos de este mismo remitente sin problemas.',
                 direccionIp: '52.14.88.10',
                 ubicacion: 'Estados Unidos',
                 tipoAcceso: 'smtp'
@@ -508,13 +355,13 @@ const BANCO_TICKETS = [
             {
                 archivo: 'sandbox.log',
                 hora: '06:30:59',
-                contenido: 'El adjunto "Factura_Octubre.pdf" es realmente un PDF, sin macros ni enlaces sospechosos. El analisis lo marco como limpio.',
+                contenido: 'El archivo Factura_Octubre.pdf es realmente un PDF, sin macros ni enlaces ocultos. El analisis automatico lo marco como limpio.',
                 tipoAcceso: 'analisis-adjunto'
             }
         ]
     },
     {
-        descripcion: 'Boletin interno mensual de comunicaciones',
+        descripcion: 'Todos recibieron el boletin interno del mes',
         dificultad: 'baja',
         nivelRiesgo: 0,
         esMalicioso: false,
@@ -522,7 +369,7 @@ const BANCO_TICKETS = [
             titulo: 'Boletin interno - Novedades del mes',
             remitente: 'comunicaciones@empresa.com',
             destinatario: 'todos@empresa.com',
-            contenido: 'Hola a todos,\n\nEstas son las novedades de este mes: se sumaron nuevos beneficios para el equipo, festejamos los cumpleanos de septiembre y destacamos los logros de cada area.\n\nPueden ver el boletin completo, con fotos y mas detalles, en la intranet.\n\nSaludos,\nComunicaciones',
+            contenido: 'Hola a todos,\n\nAqui les compartimos las novedades de este mes: nuevos beneficios para el equipo, cumpleanos y los logros mas destacados de cada area.\n\nPueden ver el boletin completo en la intranet.\n\nSaludos,\nComunicaciones',
             tieneAdjunto: false,
             nombreAdjunto: '',
             enlace: 'https://intranet.empresa.com/boletin'
@@ -531,7 +378,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'mail.log',
                 hora: '09:00:00',
-                contenido: 'El correo salio del servidor interno, con SPF y DKIM correctos, y se envio a los 148 empleados de la empresa como es habitual en los boletines mensuales.',
+                contenido: 'El correo salio desde la red interna de la empresa, paso SPF y DKIM, y se mando a los 148 empleados como es habitual en las comunicaciones internas.',
                 direccionIp: '10.0.0.2',
                 ubicacion: 'Red corporativa',
                 tipoAcceso: 'smtp'
@@ -539,7 +386,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'proxy.log',
                 hora: '09:06:27',
-                contenido: 'Un empleado (apereira) entro al enlace de la intranet, un sitio ya clasificado como corporativo y usado habitualmente.',
+                contenido: 'apereira entro al enlace del boletin desde la red corporativa. El proxy lo clasifico como sitio corporativo, sin ninguna alerta.',
                 direccionIp: '10.0.0.21',
                 ubicacion: 'Red corporativa',
                 usuario: 'apereira',
@@ -548,7 +395,7 @@ const BANCO_TICKETS = [
         ]
     },
     {
-        descripcion: 'Presentacion real compartida por un colega',
+        descripcion: 'Marketing recibio una presentacion para la reunion',
         dificultad: 'media',
         nivelRiesgo: 5,
         esMalicioso: false,
@@ -556,7 +403,7 @@ const BANCO_TICKETS = [
             titulo: 'Presentacion para la reunion de manana',
             remitente: 'juan.perez@empresa.com',
             destinatario: 'equipo.marketing@empresa.com',
-            contenido: 'Hola equipo,\n\nLes comparto la presentacion final para la reunion de manana. Incluí los ultimos numeros que cerramos ayer con el cliente.\n\nSi ven algo para ajustar, avisenme hoy asi llego a tiempo con los cambios antes de la reunion.\n\nSaludos,\nJuan',
+            contenido: 'Hola equipo,\n\nLes comparto la presentacion final para la reunion de manana con el resumen de la campana del trimestre. Ya esta revisada, pero si ven algun ajuste de ultimo momento avisenme hoy mismo.\n\nNos vemos manana.\n\nSaludos,\nJuan',
             tieneAdjunto: true,
             nombreAdjunto: 'Presentacion_Marketing.pptx',
             enlace: ''
@@ -565,7 +412,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'mail.log',
                 hora: '17:40:10',
-                contenido: 'El correo de juan.perez@empresa.com salio por el servidor interno, con SPF y DKIM correctos.',
+                contenido: 'El correo salio desde la red interna de la empresa, con SPF y DKIM correctos.',
                 direccionIp: '10.0.0.2',
                 ubicacion: 'Red corporativa',
                 tipoAcceso: 'smtp'
@@ -573,13 +420,13 @@ const BANCO_TICKETS = [
             {
                 archivo: 'sandbox.log',
                 hora: '17:40:22',
-                contenido: 'El adjunto "Presentacion_Marketing.pptx" no tiene macros ni contenido sospechoso. Se marco como limpio.',
+                contenido: 'El archivo Presentacion_Marketing.pptx es un PowerPoint real, sin macros. El analisis lo marco como limpio.',
                 tipoAcceso: 'analisis-adjunto'
             }
         ]
     },
     {
-        descripcion: 'Aviso alarmante de nuevo dispositivo que en realidad es legitimo',
+        descripcion: 'nmartinez reporta una alerta de inicio de sesion desde un dispositivo nuevo',
         dificultad: 'alta',
         nivelRiesgo: 40,
         esMalicioso: false,
@@ -587,7 +434,7 @@ const BANCO_TICKETS = [
             titulo: 'ALERTA: inicio de sesion desde un dispositivo nuevo',
             remitente: 'seguridad@empresa.com',
             destinatario: 'nmartinez@empresa.com',
-            contenido: 'Hola,\n\nDetectamos un inicio de sesion en tu cuenta corporativa desde un dispositivo que no reconociamos: un iPhone nuevo.\n\nSi fuiste vos, no necesitas hacer nada. Si no reconoces esta actividad, contacta a soporte de inmediato para proteger tu cuenta.\n\nEquipo de Seguridad',
+            contenido: 'Hola,\n\nDetectamos un inicio de sesion en tu cuenta desde un dispositivo nuevo (un iPhone) que no habiamos visto antes asociado a tu usuario.\n\nSi fuiste vos, no necesitas hacer nada. Si no reconoces este acceso, contacta a soporte de inmediato para asegurar tu cuenta.\n\nSaludos,\nEquipo de Seguridad',
             tieneAdjunto: false,
             nombreAdjunto: '',
             enlace: 'https://portal.empresa.com/seguridad'
@@ -596,7 +443,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'mail.log',
                 hora: '12:15:36',
-                contenido: 'El correo de seguridad@empresa.com es una alerta automatica real, enviada desde el servidor interno con SPF y DKIM correctos.',
+                contenido: 'El correo de alerta salio desde la red interna de la empresa, con SPF y DKIM correctos: es un aviso automatico real del sistema de seguridad.',
                 direccionIp: '10.0.0.2',
                 ubicacion: 'Red corporativa',
                 tipoAcceso: 'smtp'
@@ -604,7 +451,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'auth.log',
                 hora: '12:14:58',
-                contenido: 'El inicio de sesion se hizo con contrasena mas autenticacion de dos factores (MFA), desde la red WiFi de la oficina en Paysandu. El dispositivo fue registrado por soporte IT con un ticket asociado: alguien de soporte ya sabia y valido este nuevo telefono.',
+                contenido: 'El inicio de sesion se hizo con contrasena mas doble factor de autenticacion (MFA), desde la red WiFi de la oficina. El dispositivo nuevo fue registrado por soporte IT ese mismo dia, con un ticket de por medio (#2291).',
                 direccionIp: '192.168.1.14',
                 ubicacion: 'Red corporativa (WiFi)',
                 dispositivo: 'iPhone - App corporativa',
@@ -614,7 +461,7 @@ const BANCO_TICKETS = [
         ]
     },
     {
-        descripcion: 'Recordatorio de vencimiento de contrasena del sistema interno',
+        descripcion: 'lrodriguez reporta un aviso de vencimiento de contrasena',
         dificultad: 'alta',
         nivelRiesgo: 35,
         esMalicioso: false,
@@ -622,7 +469,7 @@ const BANCO_TICKETS = [
             titulo: 'Tu contrasena vence en 3 dias',
             remitente: 'no-reply@empresa.com',
             destinatario: 'lrodriguez@empresa.com',
-            contenido: 'Hola,\n\nPor politica de seguridad, tu contrasena vence en 3 dias. Te recomendamos cambiarla ahora desde el portal interno para no quedarte sin acceso al sistema.\n\nSi tenes algun problema para cambiarla, podes contactar a soporte tecnico.\n\nSaludos,\nSistemas',
+            contenido: 'Hola,\n\nPor politica de seguridad, tu contrasena vence en 3 dias. Te recomendamos cambiarla ahora desde el portal interno para evitar quedarte sin acceso cuando llegue la fecha.\n\nSi tenes dudas sobre como hacerlo, podes consultar la guia en la intranet.\n\nSaludos,\nSistemas',
             tieneAdjunto: false,
             nombreAdjunto: '',
             enlace: 'https://portal.empresa.com/cambiar-contrasena'
@@ -631,7 +478,7 @@ const BANCO_TICKETS = [
             {
                 archivo: 'mail.log',
                 hora: '06:00:01',
-                contenido: 'El correo se genero automaticamente desde una tarea programada del sistema interno, con SPF y DKIM correctos.',
+                contenido: 'El correo salio automaticamente desde una tarea programada interna de la empresa, con SPF y DKIM correctos.',
                 direccionIp: '10.0.0.2',
                 ubicacion: 'Red corporativa',
                 tipoAcceso: 'smtp'
@@ -639,174 +486,10 @@ const BANCO_TICKETS = [
             {
                 archivo: 'proxy.log',
                 hora: '09:21:47',
-                contenido: 'El empleado (lrodriguez) entro al portal interno de la empresa para cambiar la contrasena. El sitio tiene certificado de seguridad valido y esta clasificado como corporativo.',
+                contenido: 'lrodriguez entro al portal para cambiar la contrasena desde la red corporativa. El proxy lo clasifico como sitio corporativo, con certificado de seguridad valido.',
                 direccionIp: '10.0.0.44',
                 ubicacion: 'Red corporativa',
                 usuario: 'lrodriguez',
-                tipoAcceso: 'http'
-            }
-        ]
-    },
-    {
-        descripcion: 'Planos confidenciales enviados en un archivo cifrado acordado',
-        dificultad: 'alta',
-        nivelRiesgo: 30,
-        esMalicioso: false,
-        correo: {
-            titulo: 'Entrega de planos de la nueva sala de capacitacion',
-            remitente: 'proyectos@estudio-sur.example',
-            destinatario: 'infraestructura@empresa.com',
-            contenido: 'Hola,\n\nAdjuntamos los planos revisados de la sala, segun la orden OS-316. El archivo esta protegido con la clave que coordinamos por telefono ayer.\n\nPor favor, confirmen si la distribucion de las mesas deja libre el acceso lateral.\n\nSaludos,\nEstudio Sur',
-            tieneAdjunto: true,
-            nombreAdjunto: 'Planos_OS316.zip',
-            enlace: ''
-        },
-        logs: [
-            {
-                archivo: 'mail.log',
-                hora: '08:35:11',
-                contenido: 'El correo paso SPF, DKIM y DMARC. La orden OS-316 registra esta entrega y el contacto coincide con el estudio contratado. Infraestructura confirmo la clave usando el telefono guardado en el contrato.',
-                tipoAcceso: 'smtp'
-            },
-            {
-                archivo: 'sandbox.log',
-                hora: '08:35:24',
-                contenido: 'El analisis inicial no pudo inspeccionar el ZIP porque esta cifrado. El resultado es pendiente de revision, no limpio ni malicioso.',
-                tipoAcceso: 'analisis-adjunto'
-            },
-            {
-                archivo: 'sandbox.log',
-                hora: '08:49:02',
-                contenido: 'Seguridad abrio el archivo en el entorno aislado con la clave verificada. Contiene tres planos PDF sin scripts, archivos ejecutables ni enlaces externos. Los nombres y el contenido coinciden con la entrega prevista en OS-316.',
-                tipoAcceso: 'revision-manual'
-            }
-        ]
-    },
-    {
-        descripcion: 'Mensaje de una lista tecnica con SPF fallido por reenvio',
-        dificultad: 'alta',
-        nivelRiesgo: 25,
-        esMalicioso: false,
-        correo: {
-            titulo: '[Comunidad de redes] Respuesta sobre cableado del laboratorio',
-            remitente: 'lucia@comunidad-redes.example',
-            destinatario: 'redes@empresa.com',
-            contenido: 'Hola,\n\nSobre la consulta que enviaron ayer: para ese laboratorio conviene separar el tendido electrico del cableado de datos y dejar identificados ambos extremos de cada tramo.\n\nPodemos seguir revisando las medidas por esta misma lista.\n\nSaludos,\nLucia',
-            tieneAdjunto: false,
-            nombreAdjunto: '',
-            enlace: ''
-        },
-        logs: [
-            {
-                archivo: 'mail.log',
-                hora: '11:04:09',
-                contenido: 'SPF fallo porque el correo llego a traves del servidor que redistribuye la lista. La firma DKIM original sigue siendo valida y esta alineada con el dominio del remitente, por lo que DMARC paso. Las cabeceras muestran el recorrido por la lista conocida.',
-                tipoAcceso: 'smtp'
-            },
-            {
-                archivo: 'mail.log',
-                hora: '11:04:10',
-                contenido: 'El identificador de la lista coincide con la suscripcion aprobada de redes@empresa.com. La respuesta referencia el mensaje que el equipo envio ayer y conserva el tema de esa consulta, sin pedir credenciales, pagos ni descargas.',
-                usuario: 'redes',
-                tipoAcceso: 'verificacion-hilo'
-            }
-        ]
-    },
-    {
-        descripcion: 'Invitacion de auditoria con acceso limitado y fecha de caducidad',
-        dificultad: 'media',
-        nivelRiesgo: 15,
-        esMalicioso: false,
-        correo: {
-            titulo: 'Acceso de revision al expediente de auditoria A-72',
-            remitente: 'accesos@auditoria-rio.example',
-            destinatario: 'calidad@empresa.com',
-            contenido: 'Estimados,\n\nHabilitamos su acceso al expediente A-72 para revisar las observaciones de la visita. La invitacion permite consultar ese expediente durante siete dias.\n\nIngresen con su cuenta corporativa habitual. Si necesitan adjuntar una respuesta, coordinaremos el permiso con la responsable de calidad.\n\nAuditoria Rio',
-            tieneAdjunto: false,
-            nombreAdjunto: '',
-            enlace: 'https://portal.auditoria-rio.example/expedientes/A-72'
-        },
-        logs: [
-            {
-                archivo: 'proxy.log',
-                hora: '12:20:31',
-                contenido: 'La direccion coincide con el portal registrado en el contrato de auditoria. La navegacion lleva al proveedor de identidad corporativo aprobado, sin formularios intermedios que recolecten la contrasena.',
-                usuario: 'calidad',
-                tipoAcceso: 'http'
-            },
-            {
-                archivo: 'auth.log',
-                hora: '12:21:08',
-                contenido: 'Calidad ingreso con MFA a una aplicacion previamente aprobada. La invitacion figura en la solicitud AUD-72: concede solo lectura del expediente indicado y caduca en siete dias. No otorga acceso al correo ni a otros archivos de la empresa.',
-                usuario: 'calidad',
-                tipoAcceso: 'acceso-invitado'
-            }
-        ]
-    },
-    {
-        descripcion: 'Encuesta anonima del comedor alojada en un servicio externo aprobado',
-        dificultad: 'baja',
-        nivelRiesgo: 10,
-        esMalicioso: false,
-        correo: {
-            titulo: 'Elegi las opciones del menu de invierno',
-            remitente: 'comedor@empresa.com',
-            destinatario: 'todos@empresa.com',
-            contenido: 'Hola a todos,\n\nEstamos preparando el menu de invierno y queremos conocer sus preferencias. La encuesta tiene tres preguntas sobre platos y horarios; es anonima y no hace falta iniciar sesion.\n\nPueden responder hasta el viernes. Tambien hay una urna junto a la entrada del comedor para quienes prefieran votar en papel.\n\nEquipo del comedor',
-            tieneAdjunto: false,
-            nombreAdjunto: '',
-            enlace: 'https://encuestas-servicio.example/comedor/invierno'
-        },
-        logs: [
-            {
-                archivo: 'mail.log',
-                hora: '10:00:12',
-                contenido: 'El correo salio de la casilla interna del comedor con las verificaciones de origen correctas. La campana y la direccion exacta de la encuesta estan registradas en la solicitud COM-19 aprobada por administracion.',
-                tipoAcceso: 'smtp'
-            },
-            {
-                archivo: 'proxy.log',
-                hora: '10:07:26',
-                contenido: 'El formulario esta alojado en el servicio externo aprobado para encuestas. Solo muestra opciones de platos y horarios; no pide nombre, correo, contrasena ni datos bancarios. Al enviarlo no redirige a otros sitios ni inicia descargas.',
-                usuario: 'apereira',
-                tipoAcceso: 'http'
-            }
-        ]
-    },
-    {
-        descripcion: 'Alerta real de respaldo incompleto por falta de espacio',
-        dificultad: 'media',
-        nivelRiesgo: 30,
-        esMalicioso: false,
-        correo: {
-            titulo: 'Respaldo nocturno incompleto: repositorio de archivo',
-            remitente: 'monitoreo@empresa.com',
-            destinatario: 'guardia.sistemas@empresa.com',
-            contenido: 'La tarea de respaldo BK-204 termino con errores a las 03:12. El repositorio de destino no tiene espacio suficiente para completar la copia.\n\nRevisen la alerta desde la consola habitual de monitoreo y apliquen el procedimiento de capacidad. La ultima copia completa sigue disponible.\n\nMensaje automatico del servicio de respaldos.',
-            tieneAdjunto: false,
-            nombreAdjunto: '',
-            enlace: ''
-        },
-        logs: [
-            {
-                archivo: 'mail.log',
-                hora: '03:12:06',
-                contenido: 'El correo fue generado por el servicio interno de monitoreo. Su identificador de evento coincide con BK-204 y el destino es la lista de guardia configurada para fallos de respaldo.',
-                tipoAcceso: 'smtp'
-            },
-            {
-                archivo: 'auth.log',
-                hora: '03:00:00',
-                contenido: 'La cuenta de servicio de respaldos inicio la tarea programada desde el servidor registrado, con sus permisos habituales. No hubo cambios de credenciales ni accesos desde equipos nuevos.',
-                usuario: 'servicio.respaldos',
-                dispositivo: 'Servidor de respaldos',
-                tipoAcceso: 'cuenta-servicio'
-            },
-            {
-                archivo: 'proxy.log',
-                hora: '07:32:19',
-                contenido: 'La guardia abrio la consola de monitoreo desde su marcador habitual. El evento BK-204 confirma el repositorio al 100% y la copia incompleta a las 03:12. La alerta corresponde a un problema operativo real y no solicita instalar programas ni compartir secretos.',
-                usuario: 'guardia.sistemas',
                 tipoAcceso: 'http'
             }
         ]

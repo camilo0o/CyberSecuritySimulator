@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const empresaSchema = new mongoose.Schema({
+    nombre: { type: String, required: true, trim: true, default: 'Empresa sin nombre' },
     seguridad: { type: Number, required: true, default: 100 },
     reputacion: { type: Number, required: true, default: 100 },
     dinero: { type: Number, required: true, default: 10000 },

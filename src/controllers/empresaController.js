@@ -2,7 +2,13 @@ const { iniciarPartida, obtenerEstado, avanzarTurno, rendirse } = require('../se
 
 async function crearEmpresa(req, res, next) {
     try {
-        const empresa = await iniciarPartida(req.usuario.id);
+        const nombre = typeof req.body?.nombre === 'string' ? req.body.nombre.trim() : '';
+
+        if (!nombre) {
+            return res.status(400).json({ error: 'El nombre de la empresa es requerido' });
+        }
+
+        const empresa = await iniciarPartida(req.usuario.id, nombre);
         res.status(201).json(empresa);
     } catch (err) {
         next(err);
